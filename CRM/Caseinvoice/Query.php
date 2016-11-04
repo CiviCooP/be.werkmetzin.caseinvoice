@@ -36,12 +36,14 @@ class CRM_Caseinvoice_Query {
     }
     if ($from) {
       $where .= " AND a.activity_date_time >= %{$paramCount}";
-      $params[$paramCount] = array($from, 'String');
+      $fromDate = new DateTime($from);
+      $params[$paramCount] = array($fromDate->format('Y-m-d'), 'String');
       $paramCount++;
     }
     if ($to) {
       $where .= " AND a.activity_date_time <= %{$paramCount}";
-      $params[$paramCount] = array($to, 'String');
+      $toDate = new DateTime($to);
+      $params[$paramCount] = array($toDate->format('Y-m-d'), 'String');
       $paramCount++;
     }
 
@@ -70,7 +72,7 @@ class CRM_Caseinvoice_Query {
             {$where} 
             ORDER BY contact.sort_name, c.id, a.activity_date_time
             ";
-
+echo $sql; var_dump($params); exit();
     $dao = CRM_Core_DAO::executeQuery($sql, $params);
     while($dao->fetch()) {
       $row = array(
