@@ -72,7 +72,7 @@ class CRM_Caseinvoice_Query {
             {$where} 
             ORDER BY contact.sort_name, c.id, a.activity_date_time
             ";
-echo $sql; var_dump($params); exit();
+
     $dao = CRM_Core_DAO::executeQuery($sql, $params);
     while($dao->fetch()) {
       $row = array(
