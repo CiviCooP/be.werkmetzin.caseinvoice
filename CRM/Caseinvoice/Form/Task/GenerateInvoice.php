@@ -146,10 +146,10 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Tas
 
         $line_item = array(
           'label' => $label,
-          'qty' => $financial_type_id,
+          'qty' => 7,
           'unit_price' => $price,
           'line_total' => $price,
-          'financial_type_id' => 1,
+          'financial_type_id' => $financial_type_id,
           'entity_id' => $activity_id,
           'entity_table' => 'civicrm_activity',
         );
