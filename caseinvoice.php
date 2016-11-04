@@ -4,12 +4,18 @@ require_once 'caseinvoice.civix.php';
 
 function caseinvoice_civicrm_buildForm($formName, &$form) {
   if ($form instanceof CRM_Contribute_Form_ContributionView) {
-    $lineItems = array();
     $lineItem = CRM_Price_BAO_LineItem::getLineItems($form->get('id'), 'contribution', NULL, TRUE, TRUE);
     if (!empty($lineItem)) {
-      $lineItems[] = $lineItem;
+      $lineItems = array();
+      foreach($lineItem as $key => $item) {
+        if ($item['entity_table'] == 'civicrm_activity') {
+          $lineItems[0][$key] = $item;
+        }
+      }
+      if (!empty($lineItems)) {
+        $form->assign('lineItem', $lineItems);
+      }
     }
-    $form->assign('lineItem', $lineItems);
   }
 }
 
@@ -152,15 +158,15 @@ function caseinvoice_civicrm_preProcess($formName, &$form) {
  * Implements hook_civicrm_navigationMenu().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- *
+ */
 function caseinvoice_civicrm_navigationMenu(&$menu) {
-  _caseinvoice_civix_insert_navigation_menu($menu, NULL, array(
-    'label' => ts('The Page', array('domain' => 'be.werkmetzin.caseinvoice')),
-    'name' => 'the_page',
-    'url' => 'civicrm/the-page',
-    'permission' => 'access CiviReport,access CiviContribute',
-    'operator' => 'OR',
-    'separator' => 0,
-  ));
+  $item = array (
+    'name'          =>  ts('Generate invoices'),
+    'url'           =>  CRM_Utils_System::url('civicrm/case/generateinvoice', 'reset=1', true),
+    'permission'    => 'access CiviContribute,edit contributions,access all cases and activities',
+    'operator'      => 'AND',
+  );
+  _caseinvoice_civix_insert_navigation_menu($menu, 'Cases', $item);
+
   _caseinvoice_civix_navigationMenu($menu);
-} // */
+}

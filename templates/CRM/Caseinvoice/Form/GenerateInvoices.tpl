@@ -62,18 +62,30 @@
               <th scope="col">{ts}Activity date{/ts}</th>
               <th scope="col">{ts}Activity type{/ts}</th>
               <th scope="col">{ts}Activity status{/ts}</th>
+              <th scrope="col">{ts}Duration{/ts}</th>
           </tr>
 
 
           {foreach from=$activities item=row}
             <tr id='rowid{$row.activity_id}' class="{cycle values="odd-row,even-row"} {$row.class}">
               {assign var=cbName value=$row.checkbox}
+              {assign var=contact_id value=$row.contact_id}
+              {assign var=case_id value=$row.case_id}
               <td>{$form.$cbName.html}</td>
-              <td>{$row.display_name}</td>
-              <td>{$row.case_id}</td>
+              <td>
+                <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$contact_id`"}">
+                  {$row.display_name}
+                </a>
+              </td>
+              <td>
+                <a href="{crmURL p='civicrm/contact/view/case' q="reset=1&action=view&id=`$case_id`&cid=`$contact_id`"}">
+                  {$row.case_type_label} ({$row.case_status_label})
+                </a>
+              </td>
               <td>{$row.activity_date_time|crmDate}</td>
-              <td>{$row.activity_type_id}</td>
-              <td>{$row.activity_status_id}</td>
+              <td>{$row.activity_type_label}</td>
+              <td>{$row.activity_status_label}</td>
+              <td>{$row.duration}</td>
             </tr>
           {/foreach}
 

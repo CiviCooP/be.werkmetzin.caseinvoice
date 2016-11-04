@@ -4,6 +4,26 @@
         <div class="icon inform-icon"></div>
         <p>{ts}Are you sure you want to create invoices the selected Activities?{/ts}</p>
     </div>
-    <p>
+
+    <table class="form-layout">
+        <tr>
+            <td class="crm-case-common-form-block-financial_type_id">
+                <label>{$form.financial_type_id.label}</label> <br />
+                {$form.financial_type_id.html}
+            </td>
+        </tr>
+        <tr>
+            <td class="crm-case-common-form-block-payment_instrument_id">
+                <label>{$form.payment_instrument_id.label}</label> <br />
+                {$form.payment_instrument_id.html}
+            </td>
+        </tr>
+        <tr>
+            <td class="crm-case-common-form-block-contribution_status_id">
+                <label>{$form.contribution_status_id.label}</label> <br />
+                {$form.contribution_status_id.html}
+            </td>
+        </tr>
+    </table>
     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>

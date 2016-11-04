@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <extension key="be.werkmetzin.caseinvoice" type="module">
   <file>caseinvoice</file>
-  <name>Create invoice</name>
+  <name>Case invoice generation</name>
   <description>Cretae invoices from case activities</description>
   <license>AGPL-3.0</license>
   <maintainer>

@@ -4,6 +4,6 @@
     <path>civicrm/case/generateinvoice</path>
     <page_callback>CRM_Caseinvoice_Controller_GenerateInvoices</page_callback>
     <title>Generate Invoices</title>
-    <access_arguments>access CiviCRM</access_arguments>
+    <access_arguments>access CiviContribute,edit contributions,access all cases and activities</access_arguments>
   </item>
 </menu>
