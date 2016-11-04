@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/case/generateinvoice</path>
+    <page_callback>CRM_Caseinvoice_Controller_GenerateInvoices</page_callback>
+    <title>Generate Invoices</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>
