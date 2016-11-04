@@ -137,6 +137,7 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Tas
       }
 
       $total = 0.00;
+      $total_tax_amount = 0.00;
       $line_items = array();
       foreach ($activities as $activity_id => $activity) {
         $minutes = $this->calculateRoundedMinutes($activity['duration'], $invoiceSetting['rounding']);
@@ -146,14 +147,16 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Tas
 
         $line_item = array(
           'label' => $label,
-          'qty' => 7,
+          'qty' => 1,
           'unit_price' => $price,
           'line_total' => $price,
           'financial_type_id' => $financial_type_id,
           'entity_id' => $activity_id,
           'entity_table' => 'civicrm_activity',
         );
+        $line_item = CRM_Contribute_BAO_Contribution::checkTaxAmount($line_item, TRUE);
         $total = $total + $line_item['line_total'];
+        $total_tax_amount = $total_tax_amount + $line_item['tax_amount'];
         $line_items[] = $line_item;
       }
       if (!$total) {
@@ -165,7 +168,8 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Tas
       $contributionParams['payment_instrument_id'] = $payment_instrument_id;
       $contributionParams['skipLineItem'] = true;
       $contributionParams['skipRecentView'] = true;
-      $contributionParams['total_amount'] = $total;
+      $contributionParams['total_amount'] = $total + $total_tax_amount;
+      $contributionParams['tax_amount'] = $total_tax_amount;
       $contribution = civicrm_api3('Contribution', 'create', $contributionParams);
       foreach($line_items as $line_item) {
         $line_item['contribution_id'] = $contribution['id'];
