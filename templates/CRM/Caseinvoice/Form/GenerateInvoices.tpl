@@ -72,6 +72,7 @@
               <th scope="col">{ts}Activity type{/ts}</th>
               <th scope="col">{ts}Activity status{/ts}</th>
               <th scrope="col">{ts}Duration{/ts}</th>
+              <th scrope="col">{ts}KM{/ts}</th>
           </tr>
 
 
@@ -104,6 +105,7 @@
               <td>{$row.activity_type_label}</td>
               <td>{$row.activity_status_label}</td>
               <td>{$row.duration}</td>
+              <td>{$row.km}</td>
             </tr>
           {/foreach}
 

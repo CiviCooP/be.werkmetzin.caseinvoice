@@ -8,6 +8,12 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
 
   public function install() {
     $this->executeCustomDataFile('xml/case_invoice_settings.xml');
+    $this->executeCustomDataFile('xml/km.xml');
+  }
+
+  public function upgrade_1001() {
+    $this->executeCustomDataFile('xml/km.xml');
+    return true;
   }
 
 

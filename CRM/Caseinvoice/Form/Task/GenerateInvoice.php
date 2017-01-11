@@ -31,6 +31,10 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Tas
    */
   public function buildQuickForm() {
 
+    $this->add('text', 'km', ts('KM Vergoedeing'), true);
+
+    $this->addFormRule(array('CRM_Caseinvoice_Form_Task_GenerateInvoice', 'checkKm'));
+
     $this->addSelect('payment_instrument_id',
       array('entity' => 'contribution', 'label' => ts('Payment Method'), 'option_url' => NULL, 'placeholder' => ts('- select -')),
       true //Required
@@ -46,12 +50,55 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Tas
     $this->addDefaultButtons(ts('Generate invoice'), 'done');
   }
 
+  public static function checkKm($fields) {
+    $km = self::convertToFloat($fields['km']);
+    $errors = array();
+    if (!is_numeric($km)) {
+      $errors['km'] = ts('Enter a valid amount');
+    }
+    if (count($errors)) {
+      return $errors;
+    }
+    return true;
+  }
+
+  static function convertToFloat($money) {
+    $config = CRM_Core_Config::singleton();
+    $currency = $config->defaultCurrency;
+    $_currencySymbols = CRM_Core_PseudoConstant::get('CRM_Contribute_DAO_Contribution', 'currency', array('keyColumn' => 'name', 'labelColumn' => 'symbol'));
+    $currencySymbol = CRM_Utils_Array::value($currency, $_currencySymbols, $currency);
+    $replacements = array(
+      $currency => '',
+      $currencySymbol => '',
+      $config->monetaryThousandSeparator => '',
+    );
+    $return =  trim(strtr($money, $replacements));
+    $decReplacements = array(
+      $config->monetaryDecimalPoint => '.',
+    );
+    $return = trim(strtr($return, $decReplacements));
+    return $return;
+  }
+
+
   public function setDefaultValues() {
     $defaults = array();
+
+    $km = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'km', null, 0.4);
+    $defaults['km'] = $km;
+
+    $paymentInstruments = civicrm_api3('Contribution', 'getoptions', array('field' => 'payment_instrument_id'));
+    foreach($paymentInstruments['values'] as $paymentInstrumentId => $label) {
+      if ($label == 'Factuur') {
+        $defaults['payment_instrument_id'] = $paymentInstrumentId;
+      }
+    }
+
     $statusValues = CRM_Core_PseudoConstant::get('CRM_Contribute_DAO_Contribution', 'contribution_status_id');
     foreach($statusValues as $status_id => $label) {
       if ($label == 'Pending') {
         $defaults['contribution_status_id'] = $status_id;
+        break;
       }
     }
     return $defaults;
@@ -134,6 +181,7 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Tas
 
     $payment_instrument_id = $submittedValues['payment_instrument_id'];
     $contribution_status_id = $submittedValues['contribution_status_id'];
+    $km = $submittedValues['km'];
 
     foreach($this->activities as $activity) {
       $save_on_case_id = $activity['case_id'];
@@ -187,6 +235,25 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Tas
           $total = $total + $line_item['line_total'];
           $total_tax_amount = $total_tax_amount + $line_item['tax_amount'];
           $line_items[] = $line_item;
+
+          if (!empty($activity['km'])) {
+            $km_price = round($km * $activity['km'], 2);
+            $km_label = CRM_Utils_Date::customFormat($activity['activity_date_time'], $config->dateformatFull) . ' ' . $activity['activity_type_label'] . ' - ' . $display_name . ': ' . $activity['km'] . ' KM';
+
+            $line_item = array(
+              'label' => $km_label,
+              'qty' => 1,
+              'unit_price' => $km_price,
+              'line_total' => $km_price,
+              'financial_type_id' => $financial_type_id,
+              'entity_id' => $activity_id,
+              'entity_table' => 'civicrm_activity',
+            );
+            $line_item = CRM_Contribute_BAO_Contribution::checkTaxAmount($line_item, TRUE);
+            $total = $total + $line_item['line_total'];
+            $total_tax_amount = $total_tax_amount + $line_item['tax_amount'];
+            $line_items[] = $line_item;
+          }
         }
       }
       if (!$total) {
@@ -217,6 +284,8 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Tas
         'contribution_id' => $contribution['id']
       ));
     }
+
+    CRM_Core_BAO_Setting::setItem((float) $km, 'be.werkmetzin.caseinvoice', 'km');
   }
 
 }

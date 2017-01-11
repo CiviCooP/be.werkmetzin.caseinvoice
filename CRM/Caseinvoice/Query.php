@@ -65,8 +65,9 @@ class CRM_Caseinvoice_Query {
               a.id as activity_id, a.activity_date_time, a.activity_type_id, a.status_id as activity_status_id, activity_type.label as activity_type_label, activity_status.label as activity_status_label, a.duration,
               c.id as case_id, c.case_type_id, case_type.title as case_type_label, c.status_id as case_status_id, case_status.label AS case_status_label,
               contact.display_name, contact.id as contact_id,
-              parent_case.id AS parent_case_id, parent_case_type.title as parent_case_type_label, parent_case_status.label AS parent_case_status_label, parent_contact.id as parent_contact_id, parent_contact.display_name as parent_display_name
-            FROM civicrm_activity a 
+              parent_case.id AS parent_case_id, parent_case_type.title as parent_case_type_label, parent_case_status.label AS parent_case_status_label, parent_contact.id as parent_contact_id, parent_contact.display_name as parent_display_name,
+              civicrm_value_km.km
+            FROM civicrm_activity a
             INNER JOIN civicrm_case_activity ca on a.id = ca.activity_id 
             INNER JOIN civicrm_case c on ca.case_id = c.id
             INNER JOIN civicrm_case_contact cc on c.id = cc.case_id
@@ -90,6 +91,8 @@ class CRM_Caseinvoice_Query {
             LEFT JOIN civicrm_case_type parent_case_type ON parent_case_type.id = parent_case.case_type_id
             LEFT JOIN civicrm_option_group og_parent_case_status ON og_parent_case_status.name = 'case_status'
             LEFT JOIN civicrm_option_value parent_case_status ON parent_case_status.option_group_id = og_parent_case_status.id AND parent_case_status.value = parent_case.status_id
+            
+            LEFT JOIN civicrm_value_km ON civicrm_value_km.entity_id = a.id 
             
             WHERE
             {$where} 
@@ -118,6 +121,7 @@ class CRM_Caseinvoice_Query {
         'parent_case_status_label' => $dao->parent_case_status_label,
         'parent_contact_id' => $dao->parent_contact_id,
         'parent_display_name' => $dao->parent_display_name,
+        'km' => $dao->km,
         'checkbox' => CRM_Core_Form::CB_PREFIX . $dao->activity_id,
       );
       $return[] = $row;

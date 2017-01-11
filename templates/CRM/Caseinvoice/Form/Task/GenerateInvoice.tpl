@@ -7,6 +7,12 @@
 
     <table class="form-layout">
         <tr>
+            <td class="crm-case-common-form-block-km">
+                <label>{$form.km.label}</label> <br />
+                {$form.km.html}
+            </td>
+        </tr>
+        <tr>
             <td class="crm-case-common-form-block-payment_instrument_id">
                 <label>{$form.payment_instrument_id.label}</label> <br />
                 {$form.payment_instrument_id.html}

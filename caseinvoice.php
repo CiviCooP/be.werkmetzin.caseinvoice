@@ -3,6 +3,13 @@
 require_once 'caseinvoice.civix.php';
 
 function caseinvoice_civicrm_buildForm($formName, &$form) {
+  if ($form instanceof CRM_Case_Form_CustomData) {
+    $customGroupName = civicrm_api3('CustomGroup', 'getvalue', array('return' => 'name', 'id' => $form->getVar('_groupID')));
+    if ($customGroupName == 'case_invoice_settings') {
+      $roundingCustomField = civicrm_api3('CustomField', 'getsingle', array('name' => 'rounding', 'custom_group_id' => $form->getVar('_groupID')));
+      $form->setDefaults(array('custom_'.$roundingCustomField['id'].'_-1' => '15_minutes'));
+    }
+  }
   if ($form instanceof CRM_Contribute_Form_ContributionView) {
     $lineItem = CRM_Price_BAO_LineItem::getLineItems($form->get('id'), 'contribution', NULL, TRUE, TRUE);
     if (!empty($lineItem)) {
