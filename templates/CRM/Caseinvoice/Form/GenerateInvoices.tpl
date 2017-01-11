@@ -29,6 +29,14 @@
             </td>
           </tr>
           <tr>
+            <td>
+              <label>{$form.betaalwijze.label}</label>
+              <br />
+                {$form.betaalwijze.html}
+            </td>
+            <td></td>
+          </tr>
+          <tr>
             <td><label>{ts}Activity Dates{/ts}</label></td>
           </tr>
           <tr>
@@ -59,6 +67,7 @@
               <th scope="col" title="Select Rows">{$form.toggleSelect.html}</th>
               <th scope="col">{ts}Contact{/ts}</th>
               <th scope="col">{ts}Case{/ts}</th>
+              <th scope="col">{ts}Parent Case{/ts}</th>
               <th scope="col">{ts}Activity date{/ts}</th>
               <th scope="col">{ts}Activity type{/ts}</th>
               <th scope="col">{ts}Activity status{/ts}</th>
@@ -71,6 +80,8 @@
               {assign var=cbName value=$row.checkbox}
               {assign var=contact_id value=$row.contact_id}
               {assign var=case_id value=$row.case_id}
+              {assign var=parent_case_id value=$row.parent_case_id}
+              {assign var=parent_contact_id value=$row.parent_contact_id}
               <td>{$form.$cbName.html}</td>
               <td>
                 <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$contact_id`"}">
@@ -81,6 +92,13 @@
                 <a href="{crmURL p='civicrm/contact/view/case' q="reset=1&action=view&id=`$case_id`&cid=`$contact_id`"}">
                   {$row.case_type_label} ({$row.case_status_label})
                 </a>
+              </td>
+              <td>
+                {if (!empty($parent_case_id))}
+                <a href="{crmURL p='civicrm/contact/view/case' q="reset=1&action=view&id=`$parent_case_id`&cid=`$parent_contact_id`"}">
+                    {$row.parent_display_name} - {$row.parent_case_type_label} ({$row.parent_case_status_label})
+                </a>
+                {/if}
               </td>
               <td>{$row.activity_date_time|crmDate}</td>
               <td>{$row.activity_type_label}</td>

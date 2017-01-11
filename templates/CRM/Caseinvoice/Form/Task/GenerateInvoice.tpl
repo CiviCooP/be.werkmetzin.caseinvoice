@@ -7,12 +7,6 @@
 
     <table class="form-layout">
         <tr>
-            <td class="crm-case-common-form-block-financial_type_id">
-                <label>{$form.financial_type_id.label}</label> <br />
-                {$form.financial_type_id.html}
-            </td>
-        </tr>
-        <tr>
             <td class="crm-case-common-form-block-payment_instrument_id">
                 <label>{$form.payment_instrument_id.label}</label> <br />
                 {$form.payment_instrument_id.html}

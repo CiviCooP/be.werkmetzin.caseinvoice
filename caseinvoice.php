@@ -19,6 +19,24 @@ function caseinvoice_civicrm_buildForm($formName, &$form) {
   }
 }
 
+function caseinvoice_civicrm_customFieldOptions( $fieldID, &$options, $detailedFormat = false ) {
+  $customField = civicrm_api3('CustomField', 'getsingle', array('id' => $fieldID));
+  if ($customField['name'] == 'case_financial_type') {
+    $financialTypes = civicrm_api3('FinancialType', 'get', array());
+    foreach($financialTypes['values'] as $financialType) {
+      if ($detailedFormat) {
+        $options[$financialType['id']] = array(
+          'id' => $financialType['id'],
+          'value' => $financialType['id'],
+          'label' => $financialType['name'],
+        );
+      } else {
+        $options[$financialType['id']] = $financialType['name'];
+      }
+    }
+  }
+}
+
 /**
  * Implements hook_civicrm_config().
  *

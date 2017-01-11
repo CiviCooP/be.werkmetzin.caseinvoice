@@ -7,6 +7,9 @@
 class CRM_Caseinvoice_Query {
 
   public static function query($formValues) {
+    $coachingsinformatie = civicrm_api3('CustomGroup', 'getsingle', array('name' => 'Coachingsinformatie'));
+    $Chequenummer_kiezen = civicrm_api3('CustomField', 'getsingle', array('name' => 'Chequenummer_kiezen', 'custom_group_id' => $coachingsinformatie['id']));
+
     $return = array();
 
     $params = array();
@@ -26,6 +29,15 @@ class CRM_Caseinvoice_Query {
     }
     if (!empty($formValues['status_id'])) {
       $where .= " AND a.status_id IN (".implode(", ", $formValues['status_id']).")";
+    }
+    if (!empty($formValues['betaalwijze'])) {
+      $where .= " AND (";
+      foreach($formValues['betaalwijze'] as $betaalwijze) {
+        $where .= "`".$coachingsinformatie['table_name']."`.`".$Chequenummer_kiezen['column_name']."` = %".$paramCount;
+        $params[$paramCount] = array($betaalwijze, 'String');
+        $paramCount++;
+      }
+      $where .= ")";
     }
 
     $relative = $formValues['activity_date_relative'];
@@ -52,12 +64,15 @@ class CRM_Caseinvoice_Query {
     $sql = "SELECT 
               a.id as activity_id, a.activity_date_time, a.activity_type_id, a.status_id as activity_status_id, activity_type.label as activity_type_label, activity_status.label as activity_status_label, a.duration,
               c.id as case_id, c.case_type_id, case_type.title as case_type_label, c.status_id as case_status_id, case_status.label AS case_status_label,
-              contact.display_name, contact.id as contact_id
+              contact.display_name, contact.id as contact_id,
+              parent_case.id AS parent_case_id, parent_case_type.title as parent_case_type_label, parent_case_status.label AS parent_case_status_label, parent_contact.id as parent_contact_id, parent_contact.display_name as parent_display_name
             FROM civicrm_activity a 
             INNER JOIN civicrm_case_activity ca on a.id = ca.activity_id 
             INNER JOIN civicrm_case c on ca.case_id = c.id
             INNER JOIN civicrm_case_contact cc on c.id = cc.case_id
             INNER JOIN civicrm_contact contact on contact.id = cc.contact_id
+            
+            LEFT JOIN `{$coachingsinformatie['table_name']}` ON `{$coachingsinformatie['table_name']}`.entity_id = c.id 
             
             LEFT JOIN civicrm_case_type case_type ON case_type.id = c.case_type_id
             LEFT JOIN civicrm_option_group og_case_status ON og_case_status.name = 'case_status'
@@ -68,9 +83,17 @@ class CRM_Caseinvoice_Query {
             LEFT JOIN civicrm_option_group og_activity_status ON og_activity_status.name = 'activity_status'
             LEFT JOIN civicrm_option_value activity_status ON activity_status.option_group_id = og_activity_status.id AND activity_status.value = a.status_id
             
+            LEFT JOIN civicrm_value_caselink_case caselink ON caselink.entity_id = c.id
+            LEFT JOIN civicrm_case parent_case ON parent_case.id = caselink.case_id
+            LEFT JOIN civicrm_case_contact parent_cc on parent_case.id = parent_cc.case_id
+            LEFT JOIN civicrm_contact parent_contact on parent_contact.id = parent_cc.contact_id
+            LEFT JOIN civicrm_case_type parent_case_type ON parent_case_type.id = parent_case.case_type_id
+            LEFT JOIN civicrm_option_group og_parent_case_status ON og_parent_case_status.name = 'case_status'
+            LEFT JOIN civicrm_option_value parent_case_status ON parent_case_status.option_group_id = og_parent_case_status.id AND parent_case_status.value = parent_case.status_id
+            
             WHERE
             {$where} 
-            ORDER BY contact.sort_name, c.id, a.activity_date_time
+            ORDER BY parent_contact.sort_name, contact.sort_name, c.id, a.activity_date_time
             ";
 
     $dao = CRM_Core_DAO::executeQuery($sql, $params);
@@ -90,6 +113,11 @@ class CRM_Caseinvoice_Query {
         'case_status_label' => $dao->case_status_label,
         'contact_id' => $dao->contact_id,
         'display_name' => $dao->display_name,
+        'parent_case_id' => $dao->parent_case_id,
+        'parent_case_type_label' => $dao->parent_case_type_label,
+        'parent_case_status_label' => $dao->parent_case_status_label,
+        'parent_contact_id' => $dao->parent_contact_id,
+        'parent_display_name' => $dao->parent_display_name,
         'checkbox' => CRM_Core_Form::CB_PREFIX . $dao->activity_id,
       );
       $return[] = $row;

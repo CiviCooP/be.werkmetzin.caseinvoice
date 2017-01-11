@@ -89,6 +89,12 @@ class CRM_Caseinvoice_Form_GenerateInvoices extends CRM_Core_Form_Search {
 
     CRM_Core_Form_Date::buildDateRange($this, 'activity_date', 1, '_low', '_high', ts('From'), FALSE, FALSE);
 
+    $coachingsinformatie = civicrm_api3('CustomGroup', 'getsingle', array('name' => 'Coachingsinformatie'));
+    $betaalwijze = civicrm_api3('CustomField', 'getsingle', array('name' => 'Chequenummer_kiezen', 'custom_group_id' => $coachingsinformatie['id']));
+    $this->addSelect('betaalwijze',
+      array('entity' => 'case', 'field' => 'custom_'.$betaalwijze['id'], 'label' => $betaalwijze['label'], 'multiple' => 'multiple', 'option_url' => NULL, 'placeholder' => ts('- any -'))
+    );
+
     $this->addTaskMenu(CRM_Caseinvoice_Task::taskTitles());
     $this->assign('actionButtonName', $this->_actionButtonName);
 
