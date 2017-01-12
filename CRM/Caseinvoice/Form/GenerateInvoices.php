@@ -102,6 +102,14 @@ class CRM_Caseinvoice_Form_GenerateInvoices extends CRM_Core_Form_Search {
       array('entity' => 'case', 'field' => 'custom_'.$betaalwijze['id'], 'label' => $betaalwijze['label'], 'multiple' => 'multiple', 'option_url' => NULL, 'placeholder' => ts('- any -'))
     );
 
+    $this->addSelect('not_invoiced', array(
+      'options' => array('1' => 'Nog niet gefactureerde activiteiten', '0' => 'Alle activiteiten (gefactureerde als nog niet gefactureerde)'),
+      'label' => 'Nog niet gefactureerde activiteiten',
+      'entity' => false,
+      'field' => false
+    ));
+    $this->setDefaults(array('not_invoiced' => array(1)));
+
     $this->addTaskMenu(CRM_Caseinvoice_Task::taskTitles());
     $this->assign('actionButtonName', $this->_actionButtonName);
 

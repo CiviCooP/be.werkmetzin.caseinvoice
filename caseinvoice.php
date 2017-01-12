@@ -8,6 +8,18 @@ function caseinvoice_civicrm_buildForm($formName, &$form) {
     if ($customGroupName == 'case_invoice_settings') {
       $roundingCustomField = civicrm_api3('CustomField', 'getsingle', array('name' => 'rounding', 'custom_group_id' => $form->getVar('_groupID')));
       $form->setDefaults(array('custom_'.$roundingCustomField['id'].'_-1' => '15_minutes'));
+
+      try {
+        $financialTypeId = civicrm_api3('FinancialType', 'getvalue', array('name' => 'Facturatie Coaching (21%)', 'return' => 'id'));
+        $financialTypeCustomField = civicrm_api3('CustomField', 'getsingle', array(
+          'name' => 'case_financial_type',
+          'custom_group_id' => $form->getVar('_groupID')
+        ));
+        $form->setDefaults(array('custom_'.$financialTypeCustomField['id'].'_-1' => $financialTypeId));
+      } catch (Exception $e) {
+        // Do nothing
+      }
+
     }
   }
   if ($form instanceof CRM_Contribute_Form_ContributionView) {

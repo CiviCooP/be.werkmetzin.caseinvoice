@@ -14,7 +14,10 @@ class CRM_Caseinvoice_Query {
 
     $params = array();
     $paramCount = 1;
-    $where = "a.id NOT IN (SELECT civicrm_line_item.entity_id FROM civicrm_line_item WHERE civicrm_line_item.entity_table = 'civicrm_activity')";
+    $where = " 1";
+    if (!empty($formValues['not_invoiced'])) {
+      $where .= " AND a.id NOT IN (SELECT civicrm_line_item.entity_id FROM civicrm_line_item WHERE civicrm_line_item.entity_table = 'civicrm_activity')";
+    }
     $where .= " AND a.is_test = '0' AND a.is_current_revision = '1' AND a.is_deleted = '0' AND c.is_deleted = '0'";
     $where .= " AND contact.is_deleted = '0'";
 

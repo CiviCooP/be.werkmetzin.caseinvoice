@@ -35,6 +35,11 @@ class CRM_Caseinvoice_Task {
           'class' => 'CRM_Caseinvoice_Form_Task_GenerateInvoice',
           'result' => FALSE,
         ),
+        2 => array(
+          'title' => ts('Update activity status'),
+          'class' => 'CRM_Caseinvoice_Form_Task_SetActivityStatus',
+          'result' => FALSE,
+        ),
       );
     }
     CRM_Utils_Hook::searchTasks('caseinvoice', self::$_tasks);

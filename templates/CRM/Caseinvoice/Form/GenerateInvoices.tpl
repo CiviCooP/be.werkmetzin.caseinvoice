@@ -34,7 +34,13 @@
               <br />
                 {$form.betaalwijze.html}
             </td>
-            <td></td>
+
+            <td>
+              <label>{$form.not_invoiced.label}</label>
+              <br />
+                {$form.not_invoiced.html}
+            </td>
+
           </tr>
           <tr>
             <td><label>{ts}Activity Dates{/ts}</label></td>

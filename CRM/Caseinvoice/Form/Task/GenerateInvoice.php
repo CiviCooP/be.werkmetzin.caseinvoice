@@ -204,6 +204,7 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Tas
     $caseInvoiceSettings = $this->getInvoiceSettingsForCases($caseIds);
     $caseContacts = $this->getCaseContacts($caseIds);
 
+    $contributionCount = 0;
     foreach ($cases as $save_on_case_id => $cases_to_invoice) {
       foreach ($cases_to_invoice as $case_id => $activities) {
         if (!$caseInvoiceSettings[$case_id]) {
@@ -283,9 +284,13 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Tas
         'case_id' => $save_on_case_id,
         'contribution_id' => $contribution['id']
       ));
+
+      $contributionCount ++;
     }
 
     CRM_Core_BAO_Setting::setItem((float) $km, 'be.werkmetzin.caseinvoice', 'km');
+
+    CRM_Core_Session::setStatus('Add '.$contributionCount.' invoices', '', 'success');
   }
 
 }
