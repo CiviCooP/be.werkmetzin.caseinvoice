@@ -47,6 +47,10 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     $this->case_statuses = CRM_Core_OptionGroup::values('case_status');
     $this->activity_statuses = CRM_Core_OptionGroup::values('activity_status');
     $this->activity_type = CRM_Core_OptionGroup::values('activity_type');
+    $rels = CRM_Core_PseudoConstant::relationshipType();
+    foreach ($rels as $relid => $v) {
+      $this->rel_types[$relid] = $v['label_b_a'];
+    }
 
     $this->_columns = array(
       'client' => array(
