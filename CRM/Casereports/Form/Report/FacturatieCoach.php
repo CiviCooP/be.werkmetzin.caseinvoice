@@ -97,6 +97,9 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
       ),
       'civicrm_activity' => array(
         'fields' => array(
+          'activity_type_id' => array(
+            'title' => ts('Activity Type'),
+          ),
           'activity_date_time' => array(
             'title' => ts('Activity Date'),
             'default' => true,
@@ -277,6 +280,15 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
         $url = CRM_Utils_System::url("civicrm/contact/view/case", 'reset=1&action=view&cid=' . $row['client_id'] . '&id=' .$row['civicrm_case_id'],$this->_absoluteUrl);
         $rows[$rowNum]['civicrm_case_subject_link'] = $url;
         $rows[$rowNum]['civicrm_case_subject_hover'] = ts("Manage Case");
+        $entryFound = TRUE;
+      }
+
+      if (array_key_exists('civicrm_activity_activity_type_id', $row)) {
+        $type = '';
+        if (isset($this->activity_type[$row['civicrm_activity_activity_type_id']])) {
+          $type = $this->activity_type[$row['civicrm_activity_activity_type_id']];
+        }
+        $rows[$rowNum]['civicrm_activity_activity_type_id'] = $type;
         $entryFound = TRUE;
       }
 
