@@ -4,7 +4,7 @@
  * @license http://www.gnu.org/licenses/agpl-3.0.html
  */
 
-class CRM_Caseinvoice_Form_Task_SetActivityStatus extends CRM_Caseinvoice_Form_Task {
+class CRM_Caseinvoice_Form_Task_SetActivityStatus extends CRM_Caseinvoice_Form_CompleteInvoiceTask {
 
   /**
    * Are we operating in "single mode", i.e. deleting one
@@ -21,6 +21,16 @@ class CRM_Caseinvoice_Form_Task_SetActivityStatus extends CRM_Caseinvoice_Form_T
    */
   public function preProcess() {
     parent::preProcess();
+
+    //set the context for redirection for any task actions
+    $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $form);
+    $urlParams = 'force=1';
+    if (CRM_Utils_Rule::qfKey($qfKey)) {
+      $urlParams .= "&qfKey=$qfKey";
+    }
+
+    $session = CRM_Core_Session::singleton();
+    $session->replaceUserContext(CRM_Utils_System::url('civicrm/case/completeinvoice', $urlParams));
   }
 
   /**
@@ -30,7 +40,6 @@ class CRM_Caseinvoice_Form_Task_SetActivityStatus extends CRM_Caseinvoice_Form_T
    * @return void
    */
   public function buildQuickForm() {
-
     $activityStatus = CRM_Core_PseudoConstant::get('CRM_Activity_DAO_Activity', 'status_id', array('flip' => 1, 'labelColumn' => 'name'));
     $this->addSelect('status_id',
       array('entity' => 'activity', 'multiple' => false, 'option_url' => NULL, 'placeholder' => ts('- any -'))
@@ -38,7 +47,7 @@ class CRM_Caseinvoice_Form_Task_SetActivityStatus extends CRM_Caseinvoice_Form_T
     $this->setDefaults(array('status_id' => array($activityStatus['Betaald'])));
 
 
-    $this->addDefaultButtons(ts('Generate invoice'), 'done');
+    $this->addDefaultButtons(ts('Werk activiteitsstatus bij'), 'done');
   }
 
   /**
@@ -48,16 +57,19 @@ class CRM_Caseinvoice_Form_Task_SetActivityStatus extends CRM_Caseinvoice_Form_T
    * @return void
    */
   public function postProcess() {
+    $count=0;
     $submittedValues = $this->_submitValues;
-
     for($i=0; $i<count($this->activities); $i++) {
-      $params = array();
-      $params['id'] = $this->activities[$i]['activity_id'];
-      $params['status_id'] = $submittedValues['status_id'];
-      civicrm_api3('Activity', 'create', $params);
+      if (in_array($this->activities[$i]['activity_id'], $this->_activityHolderIds)) {
+        $params = array();
+        $params['id'] = $this->activities[$i]['activity_id'];
+        $params['status_id'] = $submittedValues['status_id'];
+        civicrm_api3('Activity', 'create', $params);
+        $count++;
+      }
     }
 
-    CRM_Core_Session::setStatus('Updated '.$i.' activities', '', 'success');
+    CRM_Core_Session::setStatus('Updated '.$count.' activities', '', 'success');
 
 
   }

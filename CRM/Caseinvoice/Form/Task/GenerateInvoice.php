@@ -4,7 +4,7 @@
  * @license http://www.gnu.org/licenses/agpl-3.0.html
  */
 
-class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Task {
+class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_GenerateInvoiceTask {
 
   /**
    * Are we operating in "single mode", i.e. deleting one
@@ -21,6 +21,16 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Tas
    */
   public function preProcess() {
     parent::preProcess();
+
+    //set the context for redirection for any task actions
+    $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $form);
+    $urlParams = 'force=1';
+    if (CRM_Utils_Rule::qfKey($qfKey)) {
+      $urlParams .= "&qfKey=$qfKey";
+    }
+
+    $session = CRM_Core_Session::singleton();
+    $session->replaceUserContext(CRM_Utils_System::url('civicrm/case/generateinvoice', $urlParams));
   }
 
   /**
@@ -47,7 +57,7 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Tas
     );
 
 
-    $this->addDefaultButtons(ts('Generate invoice'), 'done');
+    $this->addDefaultButtons(ts('Maak facturen'), 'done');
   }
 
   public static function checkKm($fields) {
@@ -184,15 +194,16 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Tas
     $km = $submittedValues['km'];
 
     foreach($this->activities as $activity) {
+      if (!in_array($activity['activity_id'], $this->_activityHolderIds)) {
+        continue;
+      }
       $save_on_case_id = $activity['case_id'];
       $parent_case_id = $this->getParentCaseId($activity['case_id']);
       if ($parent_case_id) {
         $save_on_case_id = $parent_case_id;
       }
 
-      if (in_array($activity['activity_id'], $this->_activityHolderIds)) {
-        $cases[$save_on_case_id][$activity['case_id']][$activity['activity_id']] = $activity;
-      }
+      $cases[$save_on_case_id][$activity['case_id']][$activity['activity_id']] = $activity;
       if (!in_array($activity['case_id'], $caseIds)) {
         $caseIds[] = $activity['case_id'];
       }

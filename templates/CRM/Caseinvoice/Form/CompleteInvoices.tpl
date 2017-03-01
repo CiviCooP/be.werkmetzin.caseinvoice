@@ -1,7 +1,7 @@
 <div class="help">
-  <p>Gebruik dit scherm om coachingsactiviteiten te vinden die nog niet gefactureerd zijn of aan het bedrijf.</p>
-  <p>Vervolgens kun de activiteiten selecteren en een factuur aanmaken. De factuur komt op het coachingsdossier terecht of op het bovenliggende dossier als het coachingsdossier een bovenliggend dossier heeft.</p>
+  <p>Zoek op afgeronde coachingsactiviteiten en controleer of deze overeenkomen met de inkomende factuur van de coach. Zoja dan kun je daarna de activiteit op gesloten zetten.</p>
 </div>
+
 <div class="crm-form-block crm-search-form-block">
   <div class="crm-accordion-wrapper crm-advanced_search_form-accordion {if (!empty($activities))}collapsed{/if}">
     <div class="crm-accordion-header crm-master-accordion-header">

@@ -7,7 +7,7 @@ require_once 'CRM/Core/Form.php';
  *
  * @see http://wiki.civicrm.org/confluence/display/CRMDOC43/QuickForm+Reference
  */
-class CRM_Caseinvoice_Form_GenerateInvoices extends CRM_Core_Form_Search {
+class CRM_Caseinvoice_Form_CompleteInvoices extends CRM_Core_Form_Search {
 
 
   public function preProcess() {
@@ -60,7 +60,7 @@ class CRM_Caseinvoice_Form_GenerateInvoices extends CRM_Core_Form_Search {
   }
 
   protected function query($values) {
-    return CRM_Caseinvoice_Query::query($values, true);
+    return CRM_Caseinvoice_Query::query($values, false);
   }
 
   public function buildQuickForm() {
@@ -102,7 +102,7 @@ class CRM_Caseinvoice_Form_GenerateInvoices extends CRM_Core_Form_Search {
       array('entity' => 'case', 'field' => 'custom_'.$betaalwijze['id'], 'label' => $betaalwijze['label'], 'multiple' => 'multiple', 'option_url' => NULL, 'placeholder' => ts('- any -'))
     );
 
-    $this->addTaskMenu(CRM_Caseinvoice_Task::GenerateInvoiceTaskTitles());
+    $this->addTaskMenu(CRM_Caseinvoice_Task::CompleteInvoiceTaskTitles());
     $this->assign('actionButtonName', $this->_actionButtonName);
 
     $this->addButtons(array(

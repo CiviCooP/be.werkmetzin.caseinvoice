@@ -4,7 +4,7 @@
  * @license http://www.gnu.org/licenses/agpl-3.0.html
  */
 
-class CRM_Caseinvoice_Form_Task extends CRM_Core_Form {
+class CRM_Caseinvoice_Form_GenerateInvoiceTask extends CRM_Core_Form {
 
   /**
    * The task being performed.
@@ -66,7 +66,7 @@ class CRM_Caseinvoice_Form_Task extends CRM_Core_Form {
     $form->assign('taskName', $caseInvoiceTasks[$form->_task]);
 
     $formValues = $form->get('formValues');
-    $form->activities = CRM_Caseinvoice_Query::query($formValues);
+    $form->activities = CRM_Caseinvoice_Query::query($formValues, true);
 
     $ids = array();
     if ($values['radio_ts'] == 'ts_sel') {
@@ -88,16 +88,6 @@ class CRM_Caseinvoice_Form_Task extends CRM_Core_Form {
     }
 
     $form->_activityHolderIds = $form->_componentIds = $ids;
-
-    //set the context for redirection for any task actions
-    $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $form);
-    $urlParams = 'force=1';
-    if (CRM_Utils_Rule::qfKey($qfKey)) {
-      $urlParams .= "&qfKey=$qfKey";
-    }
-
-    $session = CRM_Core_Session::singleton();
-    $session->replaceUserContext(CRM_Utils_System::url('civicrm/case/generateinvoice', $urlParams));
   }
 
 

@@ -4,7 +4,7 @@
  * @license http://www.gnu.org/licenses/agpl-3.0.html
  */
 
-class CRM_Caseinvoice_StateMachine_GenerateInvoices extends CRM_Core_StateMachine {
+class CRM_Caseinvoice_StateMachine_CompleteInvoices extends CRM_Core_StateMachine {
 
   /**
    * The task that the wizard is currently processing.
@@ -24,7 +24,7 @@ class CRM_Caseinvoice_StateMachine_GenerateInvoices extends CRM_Core_StateMachin
 
     $this->_pages = array();
 
-    $this->_pages['CRM_Caseinvoice_Form_GenerateInvoices'] = NULL;
+    $this->_pages['CRM_Caseinvoice_Form_CompleteInvoices'] = NULL;
     list($task, $result) = $this->taskName($controller, 'Search');
     $this->_task = $task;
 
@@ -60,7 +60,7 @@ class CRM_Caseinvoice_StateMachine_GenerateInvoices extends CRM_Core_StateMachin
       $value = $this->_controller->get('task');
     }
     $this->_controller->set('task', $value);
-    return CRM_Caseinvoice_Task::getGenerateInvoiceTask($value);
+    return CRM_Caseinvoice_Task::getCompleteInvoiceTask($value);
   }
 
   /**

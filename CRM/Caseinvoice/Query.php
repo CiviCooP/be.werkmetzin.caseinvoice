@@ -6,7 +6,7 @@
 
 class CRM_Caseinvoice_Query {
 
-  public static function query($formValues) {
+  public static function query($formValues, $onlyNotInvoicedActivities=true) {
     $coachingsinformatie = civicrm_api3('CustomGroup', 'getsingle', array('name' => 'Coachingsinformatie'));
     $Chequenummer_kiezen = civicrm_api3('CustomField', 'getsingle', array('name' => 'Chequenummer_kiezen', 'custom_group_id' => $coachingsinformatie['id']));
 
@@ -15,7 +15,7 @@ class CRM_Caseinvoice_Query {
     $params = array();
     $paramCount = 1;
     $where = " 1";
-    if (!empty($formValues['not_invoiced'])) {
+    if ($onlyNotInvoicedActivities) {
       $where .= " AND a.id NOT IN (SELECT civicrm_line_item.entity_id FROM civicrm_line_item WHERE civicrm_line_item.entity_table = 'civicrm_activity')";
     }
     $where .= " AND a.is_test = '0' AND a.is_current_revision = '1' AND a.is_deleted = '0' AND c.is_deleted = '0'";

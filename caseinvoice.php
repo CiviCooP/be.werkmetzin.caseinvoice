@@ -198,10 +198,18 @@ function caseinvoice_civicrm_preProcess($formName, &$form) {
  */
 function caseinvoice_civicrm_navigationMenu(&$menu) {
   $item = array (
-    'name'          =>  ts('Generate invoices'),
+    'name'          =>  ts('Uitgaande facturen (coaching)'),
     'url'           =>  CRM_Utils_System::url('civicrm/case/generateinvoice', 'reset=1', true),
     'permission'    => 'access CiviContribute,edit contributions,access all cases and activities',
     'operator'      => 'AND',
+  );
+  _caseinvoice_civix_insert_navigation_menu($menu, 'Cases', $item);
+
+  $item = array (
+      'name'          =>  ts('Afronding facturatie (coaching)'),
+      'url'           =>  CRM_Utils_System::url('civicrm/case/completeinvoice', 'reset=1', true),
+      'permission'    => 'access CiviContribute,edit contributions,access all cases and activities',
+      'operator'      => 'AND',
   );
   _caseinvoice_civix_insert_navigation_menu($menu, 'Cases', $item);
 
