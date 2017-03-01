@@ -114,14 +114,12 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
             'title' => ts('Activity Type'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE),
-            'pseudofield' => TRUE,
           ),
           'activity_status_id' => array(
             'title' => ts('Status'),
             'name' => 'status_id',
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_PseudoConstant::activityStatus('label'),
-            'pseudofield' => TRUE,
           ),
           'activity_date_time' => array(
             'title' => ts('Activity Date'),
