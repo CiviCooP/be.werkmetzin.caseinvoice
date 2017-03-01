@@ -301,7 +301,7 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
 
     CRM_Core_BAO_Setting::setItem((float) $km, 'be.werkmetzin.caseinvoice', 'km');
 
-    CRM_Core_Session::setStatus('Add '.$contributionCount.' invoices', '', 'success');
+    CRM_Core_Session::setStatus(''.$contributionCount.' factuur(en) aangemaakt', '', 'success');
   }
 
 }
