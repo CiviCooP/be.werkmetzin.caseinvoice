@@ -42,7 +42,10 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
 
   protected $_absoluteUrl = TRUE;
 
+  protected $km;
+
   public function __construct() {
+    $this->km = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'km', null, 0.4);
     $this->case_types = CRM_Case_PseudoConstant::caseType();
     $this->case_statuses = CRM_Core_OptionGroup::values('case_status');
     $this->activity_statuses = CRM_Core_OptionGroup::values('activity_status');
@@ -229,7 +232,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
   }
 
   public function modifyColumnHeaders() {
-    $km = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'km', null, 0.4);
+    $km = $this->km;
 
     $this->_columnHeaders['invoice_settings_rate_coach'] = array(
       'no_display' => true,
