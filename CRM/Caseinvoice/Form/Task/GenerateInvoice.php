@@ -124,6 +124,7 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
         'rounding' => $dao->rounding,
         'invoice_contact' => $dao->invoice_contact,
         'case_financial_type' => $dao->case_financial_type,
+        'invoice_setting' => $dao->invoice_setting,
       );
     }
     return $settings;
@@ -183,7 +184,6 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
    * @return void
    */
   public function postProcess() {
-    $config = CRM_Core_Config::singleton();
     $submittedValues = $this->_submitValues;
 
     $cases = array();
@@ -217,28 +217,67 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
 
     $contributionCount = 0;
     foreach ($cases as $save_on_case_id => $cases_to_invoice) {
-      foreach ($cases_to_invoice as $case_id => $activities) {
-        if (!$caseInvoiceSettings[$case_id]) {
-          continue;
-        }
-        $invoiceSetting = $caseInvoiceSettings[$case_id];
+      $contributionCount = $contributionCount + $this->createInvoicePerParentCase($save_on_case_id, $cases_to_invoice, $caseInvoiceSettings, $caseContacts, $km, $payment_instrument_id, $contribution_status_id);
+    }
 
-        $total = 0.00;
-        $total_tax_amount = 0.00;
-        $line_items = array();
-        foreach ($activities as $activity_id => $activity) {
-          $financial_type_id = $invoiceSetting['case_financial_type'];
-          $minutes = $this->calculateRoundedMinutes($activity['duration'], $invoiceSetting['rounding']);
-          $hours = $minutes > 0 ? ($minutes / 60) : 0;
-          $price = round($hours * $invoiceSetting['rate'], 2);
-          $display_name = civicrm_api3('Contact', 'getvalue', array('return' => 'display_name', 'id' => $caseContacts[$case_id]));
-          $label = CRM_Utils_Date::customFormat($activity['activity_date_time'], $config->dateformatFull) . ' ' . $activity['activity_type_label'] . ' - ' . $display_name . ': ' . $minutes . ' minuten';
+    CRM_Core_BAO_Setting::setItem((float) $km, 'be.werkmetzin.caseinvoice', 'km');
+
+    CRM_Core_Session::setStatus(''.$contributionCount.' factuur(en) aangemaakt', '', 'success');
+  }
+
+  private function createInvoicePerParentCase($parent_case_id, $cases_to_invoice, $caseInvoiceSettings, $caseContacts, $km, $payment_instrument_id, $contribution_status_id) {
+    $config = CRM_Core_Config::singleton();
+    $contributionCount = 0;
+    $total = 0.00;
+    $total_tax_amount = 0.00;
+    $line_items = array();
+
+    $parentInvoiceSetting = $caseInvoiceSettings[$parent_case_id];
+
+    // Check whether we collect the invoices and generate one invoice on the parent case.
+    $collectInvoices = false;
+    if (!empty($parentInvoiceSetting) && !empty($parentInvoiceSetting['invoice_setting']) && $parentInvoiceSetting['invoice_setting'] == 'collected_invoice') {
+      $collectInvoices = true;
+    }
+
+    foreach ($cases_to_invoice as $case_id => $activities) {
+      if (!$caseInvoiceSettings[$case_id]) {
+        CRM_Core_Session::setStatus(ts('No invoice settings present for case with id %1', array(1=>$case_id)));
+        continue;
+      }
+      $invoiceSetting = $caseInvoiceSettings[$case_id];
+
+      foreach ($activities as $activity_id => $activity) {
+        $financial_type_id = $invoiceSetting['case_financial_type'];
+        $minutes = $this->calculateRoundedMinutes($activity['duration'], $invoiceSetting['rounding']);
+        $hours = $minutes > 0 ? ($minutes / 60) : 0;
+        $price = round($hours * $invoiceSetting['rate'], 2);
+        $display_name = civicrm_api3('Contact', 'getvalue', array('return' => 'display_name', 'id' => $caseContacts[$case_id]));
+        $label = CRM_Utils_Date::customFormat($activity['activity_date_time'], $config->dateformatFull) . ' ' . $activity['activity_type_label'] . ' - ' . $display_name . ': ' . $minutes . ' minuten';
+
+        $line_item = array(
+          'label' => $label,
+          'qty' => 1,
+          'unit_price' => $price,
+          'line_total' => $price,
+          'financial_type_id' => $financial_type_id,
+          'entity_id' => $activity_id,
+          'entity_table' => 'civicrm_activity',
+        );
+        $line_item = CRM_Contribute_BAO_Contribution::checkTaxAmount($line_item, TRUE);
+        $total = $total + $line_item['line_total'];
+        $total_tax_amount = $total_tax_amount + $line_item['tax_amount'];
+        $line_items[] = $line_item;
+
+        if (!empty($activity['km'])) {
+          $km_price = round($km * $activity['km'], 2);
+          $km_label = CRM_Utils_Date::customFormat($activity['activity_date_time'], $config->dateformatFull) . ' ' . $activity['activity_type_label'] . ' - ' . $display_name . ': ' . $activity['km'] . ' KM';
 
           $line_item = array(
-            'label' => $label,
+            'label' => $km_label,
             'qty' => 1,
-            'unit_price' => $price,
-            'line_total' => $price,
+            'unit_price' => $km_price,
+            'line_total' => $km_price,
             'financial_type_id' => $financial_type_id,
             'entity_id' => $activity_id,
             'entity_table' => 'civicrm_activity',
@@ -247,61 +286,64 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
           $total = $total + $line_item['line_total'];
           $total_tax_amount = $total_tax_amount + $line_item['tax_amount'];
           $line_items[] = $line_item;
-
-          if (!empty($activity['km'])) {
-            $km_price = round($km * $activity['km'], 2);
-            $km_label = CRM_Utils_Date::customFormat($activity['activity_date_time'], $config->dateformatFull) . ' ' . $activity['activity_type_label'] . ' - ' . $display_name . ': ' . $activity['km'] . ' KM';
-
-            $line_item = array(
-              'label' => $km_label,
-              'qty' => 1,
-              'unit_price' => $km_price,
-              'line_total' => $km_price,
-              'financial_type_id' => $financial_type_id,
-              'entity_id' => $activity_id,
-              'entity_table' => 'civicrm_activity',
-            );
-            $line_item = CRM_Contribute_BAO_Contribution::checkTaxAmount($line_item, TRUE);
-            $total = $total + $line_item['line_total'];
-            $total_tax_amount = $total_tax_amount + $line_item['tax_amount'];
-            $line_items[] = $line_item;
-          }
         }
       }
+
       if (!$total) {
+        CRM_Core_Session::setStatus(ts('No invoice settings present for case with id %1', array(1=>$case_id)));
+        // Reset the data
+        $line_items = array();
+        $total_tax_amount = 0.00;
+        $total = 0.00;
         continue;
       }
 
-      $parentInvoiceSetting = $caseInvoiceSettings[$save_on_case_id];
-      $contact_id = $caseContacts[$save_on_case_id];
+      if (!$collectInvoices) {
+        $contact_id = $caseContacts[$parent_case_id];
+        if (!empty($parentInvoiceSetting['invoice_contact'])) {
+          $contact_id = $parentInvoiceSetting['invoice_contact'];
+        }
+        $this->createInvoice($line_items, $contact_id, $financial_type_id, $contribution_status_id, $payment_instrument_id, $total, $total_tax_amount, $parent_case_id);
+        $contributionCount ++;
+
+        // Reset the data
+        $line_items = array();
+        $total_tax_amount = 0.00;
+        $total = 0.00;
+      }
+    }
+
+    if ($collectInvoices) {
+      $contact_id = $caseContacts[$parent_case_id];
       if (!empty($parentInvoiceSetting['invoice_contact'])) {
         $contact_id = $parentInvoiceSetting['invoice_contact'];
       }
-
-      $contributionParams['contact_id'] = $contact_id;
-      $contributionParams['financial_type_id'] = $financial_type_id;
-      $contributionParams['contribution_status_id'] = $contribution_status_id;
-      $contributionParams['payment_instrument_id'] = $payment_instrument_id;
-      $contributionParams['skipLineItem'] = TRUE;
-      $contributionParams['skipRecentView'] = TRUE;
-      $contributionParams['total_amount'] = $total + $total_tax_amount;
-      $contributionParams['tax_amount'] = $total_tax_amount;
-      $contribution = civicrm_api3('Contribution', 'create', $contributionParams);
-      foreach ($line_items as $line_item) {
-        $line_item['contribution_id'] = $contribution['id'];
-        civicrm_api3('LineItem', 'Create', $line_item);
-      }
-      civicrm_api3('CaseContribution', 'create', array(
-        'case_id' => $save_on_case_id,
-        'contribution_id' => $contribution['id']
-      ));
-
+      $this->createInvoice($line_items, $contact_id, $financial_type_id, $contribution_status_id, $payment_instrument_id, $total, $total_tax_amount, $parent_case_id);
       $contributionCount ++;
     }
 
-    CRM_Core_BAO_Setting::setItem((float) $km, 'be.werkmetzin.caseinvoice', 'km');
+    return $contributionCount;
+  }
 
-    CRM_Core_Session::setStatus(''.$contributionCount.' factuur(en) aangemaakt', '', 'success');
+  private function createInvoice($line_items, $contact_id, $financial_type_id, $contribution_status_id, $payment_instrument_id, $total, $total_tax_amount, $case_id) {
+    $contributionParams = array();
+    $contributionParams['contact_id'] = $contact_id;
+    $contributionParams['financial_type_id'] = $financial_type_id;
+    $contributionParams['contribution_status_id'] = $contribution_status_id;
+    $contributionParams['payment_instrument_id'] = $payment_instrument_id;
+    $contributionParams['skipLineItem'] = TRUE;
+    $contributionParams['skipRecentView'] = TRUE;
+    $contributionParams['total_amount'] = $total + $total_tax_amount;
+    $contributionParams['tax_amount'] = $total_tax_amount;
+    $contribution = civicrm_api3('Contribution', 'create', $contributionParams);
+    foreach ($line_items as $line_item) {
+      $line_item['contribution_id'] = $contribution['id'];
+      civicrm_api3('LineItem', 'Create', $line_item);
+    }
+    civicrm_api3('CaseContribution', 'create', array(
+      'case_id' => $case_id,
+      'contribution_id' => $contribution['id']
+    ));
   }
 
 }
