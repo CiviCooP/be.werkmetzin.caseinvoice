@@ -6,7 +6,7 @@
 
 class CRM_Caseinvoice_Query {
 
-  public static function query($formValues, $onlyNotInvoicedActivities=true) {
+  public static function query($formValues, $onlyNotInvoicedActivities=true, $includeFixedPriceCases=false) {
     $coachingsinformatie = civicrm_api3('CustomGroup', 'getsingle', array('name' => 'Coachingsinformatie'));
     $Chequenummer_kiezen = civicrm_api3('CustomField', 'getsingle', array('name' => 'Chequenummer_kiezen', 'custom_group_id' => $coachingsinformatie['id']));
 
@@ -62,6 +62,10 @@ class CRM_Caseinvoice_Query {
       $paramCount++;
     }
 
+    if (!$includeFixedPriceCases) {
+      $where .= " AND (parent_invoice_settings.fixed_price_hourly_rate != 'fixed_price' AND invoice_settings.fixed_price_hourly_rate != 'fixed_price')";
+    }
+
     $where .= " AND a.duration IS NOT NULL AND a.duration > 0";
 
     $sql = "SELECT 
@@ -96,6 +100,9 @@ class CRM_Caseinvoice_Query {
             LEFT JOIN civicrm_option_value parent_case_status ON parent_case_status.option_group_id = og_parent_case_status.id AND parent_case_status.value = parent_case.status_id
             
             LEFT JOIN civicrm_value_km ON civicrm_value_km.entity_id = a.id 
+            
+            LEFT JOIN civicrm_value_case_invoice_settings invoice_settings ON invoice_settings.entity_id = c.id
+            LEFT JOIN civicrm_value_case_invoice_settings parent_invoice_settings ON parent_invoice_settings.entity_id = parent_case.id
             
             WHERE
             {$where} 

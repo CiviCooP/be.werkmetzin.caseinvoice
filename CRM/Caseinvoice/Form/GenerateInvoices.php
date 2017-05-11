@@ -60,7 +60,7 @@ class CRM_Caseinvoice_Form_GenerateInvoices extends CRM_Core_Form_Search {
   }
 
   protected function query($values) {
-    return CRM_Caseinvoice_Query::query($values, true);
+    return CRM_Caseinvoice_Query::query($values, true, false);
   }
 
   public function buildQuickForm() {
