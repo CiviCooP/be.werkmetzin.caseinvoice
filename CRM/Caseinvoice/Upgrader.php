@@ -9,6 +9,16 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
   public function install() {
     $this->executeCustomDataFile('xml/case_invoice_settings.xml');
     $this->executeCustomDataFile('xml/km.xml');
+    $result = civicrm_api3('OptionValue', 'create', array(
+      'name' => 'factureren_fixed_price',
+      'label' => 'Factureren fixed price',
+      'option_group_id' => 'activity_type',
+      'component_id' => 7, // CiviCase
+    ));
+    $factureren_fixed_price = civicrm_api3('OptionValue', 'getsingle', array('id' => $result['id']));
+    $coaching_bedrijven_dossier = civicrm_api3('CaseType', 'getsingle', array('name' => 'coaching_voor_bedrijven'));
+    $coaching_bedrijven_dossier['definition']['activityTypes'][] = array('name' => $factureren_fixed_price['name']);
+    civicrm_api3('CaseType', 'create', $coaching_bedrijven_dossier);
   }
 
   public function upgrade_1001() {
@@ -18,6 +28,20 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
 
   public function upgrade_1002() {
     $this->executeCustomDataFile('xml/case_invoice_settings.xml');
+    return true;
+  }
+
+  public function upgrade_1003() {
+    $result = civicrm_api3('OptionValue', 'create', array(
+      'name' => 'factureren_fixed_price',
+      'label' => 'Factureren fixed price',
+      'option_group_id' => 'activity_type',
+      'component_id' => 7, // CiviCase
+    ));
+    $factureren_fixed_price = civicrm_api3('OptionValue', 'getsingle', array('id' => $result['id']));
+    $coaching_bedrijven_dossier = civicrm_api3('CaseType', 'getsingle', array('name' => 'coaching_voor_bedrijven'));
+    $coaching_bedrijven_dossier['definition']['activityTypes'][] = array('name' => $factureren_fixed_price['name']);
+    civicrm_api3('CaseType', 'create', $coaching_bedrijven_dossier);
     return true;
   }
 
