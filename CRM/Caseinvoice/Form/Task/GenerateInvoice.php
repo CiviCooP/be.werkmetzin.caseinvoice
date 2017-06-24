@@ -332,7 +332,6 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
 	 * @return float
 	 */
   private function determineRate($activity, $invoiceSetting) {
-
 		if (in_array($activity['activity_type_id'], $this->coachings_activity_type_ids)) {
 			if (empty($invoiceSetting['rate'])) {
 				CRM_Core_Error::fatal('Uurtarief (coachingsactiviteiten) not set for case: '.$activity['display_name'].' (id = '.$activity['case_id'].') ');

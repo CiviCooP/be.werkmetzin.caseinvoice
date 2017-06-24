@@ -44,7 +44,24 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
 
   protected $km;
 
+  protected $coachings_activity_type_ids = array();
+	protected $ondersteunings_activity_type_ids = array();
+	protected $activity_status_id;
+
   public function __construct() {
+		$this->activity_status_id = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'activity_status_id', null, 0);
+		if (empty($this->activity_status_id)) {
+			CRM_Core_Error::fatal('Activiteitsstatus is niet <a href="'.CRM_Utils_System::url('civicrm/admin/form/caseinvoicesettings'). '">ingesteld</a>');
+		}
+		$this->coachings_activity_type_ids = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'coachings_activity_type_ids', null, 0);
+		if (!is_array($this->coachings_activity_type_ids) || empty($this->coachings_activity_type_ids)) {
+			CRM_Core_Error::fatal('Coachingactiviteiten zijn niet <a href="'.CRM_Utils_System::url('civicrm/admin/form/caseinvoicesettings'). '">ingesteld</a>');
+		}
+		$this->ondersteunings_activity_type_ids = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'ondersteunings_activity_type_ids', null, 0);
+		if (!is_array($this->ondersteunings_activity_type_ids) || empty($this->ondersteunings_activity_type_ids)) {
+			CRM_Core_Error::fatal('Ondersteuningsactiviteiten zijn niet <a href="'.CRM_Utils_System::url('civicrm/admin/form/caseinvoicesettings'). '">ingesteld</a>');
+		}
+
     $this->km = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'km', null, 0.4);
     $this->case_types = CRM_Case_PseudoConstant::caseType();
     $this->case_statuses = CRM_Core_OptionGroup::values('case_status');
@@ -113,17 +130,6 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
           ),
         ),
         'filters' => array(
-          'activity_type_id' => array(
-            'title' => ts('Activity Type'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE),
-          ),
-          'activity_status_id' => array(
-            'title' => ts('Status'),
-            'name' => 'status_id',
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Core_PseudoConstant::activityStatus('label'),
-          ),
           'activity_date_time' => array(
             'title' => ts('Activity Date'),
             'operatorType' => CRM_Report_Form::OP_DATE,
@@ -179,7 +185,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     parent::select();
 
     $activity = $this->_aliases['civicrm_activity'];
-    $this->_select .= ", invoice_settings.rate_coach AS invoice_settings_rate_coach, invoice_settings.rounding AS invoice_settings_rounding, {$activity}.duration AS activity_duration, km.km as activity_km";
+    $this->_select .= ", {$activity}.activity_type_id as activity_type_id, coach_invoice_settings.rate_coach AS invoice_settings_rate_coach, coach_invoice_settings.rate_ondersteuning AS invoice_settings_rate_ondersteuning, invoice_settings.rounding AS invoice_settings_rounding, {$activity}.duration AS activity_duration, km.km as activity_km";
   }
 
   public function from() {
@@ -199,6 +205,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     $this->_from .= "INNER JOIN civicrm_relationship_type {$relationship_type} ON {$relationship_type}.id = {$relationship}.relationship_type_id ";
     $this->_from .= "INNER JOIN civicrm_contact {$staff} ON {$staff}.id = {$relationship}.contact_id_b ";
     $this->_from .= "LEFT JOIN civicrm_value_case_invoice_settings invoice_settings ON invoice_settings.entity_id = {$case}.id ";
+		$this->_from .= "LEFT JOIN civicrm_value_coach_invoice_settings coach_invoice_settings ON coach_invoice_settings.entity_id = {$case}.id ";
     $this->_from .= "LEFT JOIN civicrm_value_km km ON km.entity_id = {$activity}.id";
   }
 
@@ -218,6 +225,10 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
       $session = CRM_Core_Session::singleton();
       $this->_where .= " AND {$relationship}.contact_id_b = '".$session->get('userID')."'";
     }
+
+		$activity_type_ids = array_merge($this->coachings_activity_type_ids, $this->ondersteunings_activity_type_ids);
+    $this->_where .= " AND {$activity}.activity_type_id IN (".implode(',', $activity_type_ids).") ";
+    $this->_where .= " AND {$activity}.status_id = '".$this->activity_status_id."'";
   }
 
   public function orderBy() {
@@ -237,12 +248,18 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     $this->_columnHeaders['invoice_settings_rate_coach'] = array(
       'no_display' => true,
     );
+    $this->_columnHeaders['invoice_settings_rate_ondersteuning'] = array(
+    	'no_display' => true,
+		);
     $this->_columnHeaders['invoice_settings_rounding'] = array(
       'no_display' => true,
     );
     $this->_columnHeaders['activity_duration'] = array(
       'no_display' => true,
     );
+		$this->_columnHeaders['activity_type_id'] = array(
+			'no_display' => true,
+		);
     $this->_columnHeaders['to_invoice'] = array(
       'title' => 'Te facturen (uren)',
       'type' => CRM_Utils_Type::T_MONEY,
@@ -302,7 +319,8 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
 
       $roundedMinutes = $this->calculateRoundedMinutes($row['activity_duration'], $row['invoice_settings_rounding']);
       $hours = $roundedMinutes > 0 ? ($roundedMinutes / 60) : 0;
-      $rows[$rowNum]['to_invoice'] = round($hours * $row['invoice_settings_rate_coach'], 2);
+      $rate = $this->determineRate($row['activity_type_id'], $row);
+      $rows[$rowNum]['to_invoice'] = round($hours * $rate, 2);
       if (empty($rows[$rowNum]['to_invoice'])) {
         $rows[$rowNum]['to_invoice'] = '0.00';
       }
@@ -316,6 +334,21 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
       }
     }
   }
+
+  protected function determineRate($activity_type_id, $row) {
+		if (in_array($activity_type_id, $this->coachings_activity_type_ids)) {
+			if (empty($row['invoice_settings_rate_coach'])) {
+				return 0.00;
+			}
+			return (float) $row['invoice_settings_rate_coach'];
+		} elseif (in_array($activity_type_id, $this->ondersteunings_activity_type_ids)) {
+			if (empty($row['invoice_settings_rate_ondersteuning'])) {
+				return 0.00;
+			}
+			return (float) $row['invoice_settings_rate_ondersteuning'];
+		}
+		return 0.00;
+	}
 
   protected function calculateRoundedMinutes($duration, $rounding) {
     if ($duration == 0) {
