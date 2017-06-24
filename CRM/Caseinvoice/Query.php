@@ -63,7 +63,7 @@ class CRM_Caseinvoice_Query {
     }
 
     if (!$includeFixedPriceCases) {
-      $where .= " AND (parent_invoice_settings.fixed_price_hourly_rate != 'fixed_price' AND invoice_settings.fixed_price_hourly_rate != 'fixed_price')";
+      $where .= " AND ((parent_invoice_settings.id IS NULL OR parent_invoice_settings.fixed_price_hourly_rate != 'fixed_price') AND invoice_settings.fixed_price_hourly_rate != 'fixed_price')";
     }
 
     $where .= " AND a.duration IS NOT NULL AND a.duration > 0";
