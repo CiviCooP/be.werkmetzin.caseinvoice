@@ -12,4 +12,12 @@
     <title>Afronding facturatie</title>
     <access_arguments>access CiviContribute,edit contributions,access all cases and activities</access_arguments>
   </item>
+  <item>
+    <path>civicrm/admin/form/caseinvoicesettings</path>
+    <page_callback>CRM_Caseinvoice_Form_Settings</page_callback>
+    <title>Facturatieinstellingen</title>
+    <access_arguments>access CiviContribute,edit contributions,access all cases and activities</access_arguments>
+    <desc>Geef hier de facturatieinstellingen op die systeembreed gelden, zoals welke activiteiten coachingsactiviteiten zijn, welke ondersteuning, de km vergoeding etc.</desc>
+    <adminGroup>CiviCase</adminGroup>
+  </item>
 </menu>

@@ -66,7 +66,7 @@ class CRM_Caseinvoice_Form_CompleteInvoiceTask extends CRM_Core_Form {
     $form->assign('taskName', $caseInvoiceTasks[$form->_task]);
 
     $formValues = $form->get('formValues');
-    $form->activities = CRM_Caseinvoice_Query::query($formValues, false);
+    $form->activities = CRM_Caseinvoice_Query::query($formValues, false, true);
 
     $ids = array();
     if ($values['radio_ts'] == 'ts_sel') {

@@ -7,6 +7,20 @@
 class CRM_Caseinvoice_Query {
 
   public static function query($formValues, $onlyNotInvoicedActivities=true, $includeFixedPriceCases=false) {
+		$activity_status_id = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'activity_status_id', null, 0);
+		if (empty($activity_status_id)) {
+			CRM_Core_Error::fatal('Activiteitsstatus is niet <a href="'.CRM_Utils_System::url('civicrm/admin/form/caseinvoicesettings'). '">ingesteld</a>');
+		}
+		$coachings_activity_type_ids = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'coachings_activity_type_ids', null, 0);
+		if (!is_array($coachings_activity_type_ids) || empty($coachings_activity_type_ids)) {
+			CRM_Core_Error::fatal('Coachingactiviteiten zijn niet <a href="'.CRM_Utils_System::url('civicrm/admin/form/caseinvoicesettings'). '">ingesteld</a>');
+		}
+		$ondersteunings_activity_type_ids = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'ondersteunings_activity_type_ids', null, 0);
+		if (!is_array($ondersteunings_activity_type_ids) || empty($ondersteunings_activity_type_ids)) {
+			CRM_Core_Error::fatal('Ondersteuningsactiviteiten zijn niet <a href="'.CRM_Utils_System::url('civicrm/admin/form/caseinvoicesettings'). '">ingesteld</a>');
+		}
+		$activity_type_ids = array_merge($coachings_activity_type_ids, $ondersteunings_activity_type_ids);
+
     $coachingsinformatie = civicrm_api3('CustomGroup', 'getsingle', array('name' => 'Coachingsinformatie'));
     $Chequenummer_kiezen = civicrm_api3('CustomField', 'getsingle', array('name' => 'Chequenummer_kiezen', 'custom_group_id' => $coachingsinformatie['id']));
 
@@ -27,12 +41,11 @@ class CRM_Caseinvoice_Query {
     if (!empty($formValues['case_status_id'])) {
       $where .= " AND c.status_id IN (".implode(", ", $formValues['case_status_id']).")";
     }
-    if (!empty($formValues['activity_type_id'])) {
-      $where .= " AND a.activity_type_id IN (".implode(", ", $formValues['activity_type_id']).")";
-    }
-    if (!empty($formValues['status_id'])) {
-      $where .= " AND a.status_id IN (".implode(", ", $formValues['status_id']).")";
-    }
+
+		$where .= " AND a.activity_type_id IN (".implode(", ", $activity_type_ids).")";
+		$where .= " AND a.status_id = %".$paramCount;
+		$params[$paramCount] = array($activity_status_id, 'Integer');
+		$paramCount++;
     if (!empty($formValues['betaalwijze'])) {
       $where .= " AND (";
       foreach($formValues['betaalwijze'] as $betaalwijze) {

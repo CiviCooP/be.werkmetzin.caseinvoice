@@ -77,23 +77,6 @@ class CRM_Caseinvoice_Form_GenerateInvoices extends CRM_Core_Form_Search {
       FALSE, array('class' => 'crm-select2', 'multiple' => 'multiple')
     );
 
-    $activityTypes = CRM_Core_PseudoConstant::get('CRM_Activity_DAO_Activity', 'activity_type_id', array('flip' => 1, 'labelColumn' => 'name'));
-    $this->addSelect('activity_type_id',
-      array('entity' => 'activity', 'label' => 'Activity Type(s)', 'multiple' => 'multiple', 'option_url' => NULL, 'placeholder' => ts('- any -'))
-    );
-    $this->setDefaults(array('activity_type_id' => array(
-      $activityTypes['Online coaching'],
-      $activityTypes['Synthese'],
-      $activityTypes['Intakegesprek'],
-      $activityTypes['Verdiepingsgesprek'],
-    )));
-
-    $activityStatus = CRM_Core_PseudoConstant::get('CRM_Activity_DAO_Activity', 'status_id', array('flip' => 1, 'labelColumn' => 'name'));
-    $this->addSelect('status_id',
-      array('entity' => 'activity', 'multiple' => 'multiple', 'option_url' => NULL, 'placeholder' => ts('- any -'))
-    );
-    $this->setDefaults(array('status_id' => array($activityStatus['Completed'])));
-
     CRM_Core_Form_Date::buildDateRange($this, 'activity_date', 1, '_low', '_high', ts('From'), FALSE, FALSE);
 
     $coachingsinformatie = civicrm_api3('CustomGroup', 'getsingle', array('name' => 'Coachingsinformatie'));

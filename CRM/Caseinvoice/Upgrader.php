@@ -87,6 +87,14 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
 		return true;
 	}
 
+	public function upgrade_1006() {
+  	$custom_group_id = civicrm_api3('CustomGroup', 'getvalue', array('return' => 'id', 'name' => 'case_invoice_settings'));
+		CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_field SET label = 'Uurtarief (coachingsactiviteiten)' WHERE `name` = 'rate' AND custom_group_id = %1", array(1=>array($custom_group_id, 'Integer')));
+  	$this->executeCustomDataFile('xml/case_invoice_settings.xml');
+
+		return true;
+	}
+
   public function uninstall() {
     try {
       $case_info_settings_gid = civicrm_api3('CustomGroup', 'getvalue', array('name' => 'case_invoice_settings'));

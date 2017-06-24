@@ -213,5 +213,14 @@ function caseinvoice_civicrm_navigationMenu(&$menu) {
   );
   _caseinvoice_civix_insert_navigation_menu($menu, 'Cases', $item);
 
+	$item = array (
+		'name'          =>  ts('Facturatieinstellingen'),
+		'url'           =>  CRM_Utils_System::url('civicrm/admin/form/caseinvoicesettings', 'reset=1', true),
+		'permission'    => 'access CiviContribute,edit contributions,access all cases and activities',
+		'operator'      => 'AND',
+		'separator'     => '2',
+	);
+	_caseinvoice_civix_insert_navigation_menu($menu, 'Administer/CiviCase', $item);
+
   _caseinvoice_civix_navigationMenu($menu);
 }

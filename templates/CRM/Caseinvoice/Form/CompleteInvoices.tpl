@@ -23,16 +23,6 @@
             </td>
           </tr>
           <tr>
-            <td><label>{$form.activity_type_id.label}</label>
-              <br />
-              {$form.activity_type_id.html}
-            </td>
-            <td>
-              {$form.status_id.label}<br/>
-              {$form.status_id.html}
-            </td>
-          </tr>
-          <tr>
             <td>
               <label>{$form.betaalwijze.label}</label>
               <br />

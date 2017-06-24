@@ -14,6 +14,10 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
    */
   protected $_single = FALSE;
 
+  private $coachings_activity_type_ids = array();
+
+  private $ondersteunings_activity_type_ids = array();
+
   /**
    * Build all the data structures needed to build the form.
    *
@@ -21,6 +25,15 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
    */
   public function preProcess() {
     parent::preProcess();
+
+		$this->coachings_activity_type_ids = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'coachings_activity_type_ids', null, 0);
+		if (!is_array($this->coachings_activity_type_ids) || empty($this->coachings_activity_type_ids)) {
+			CRM_Core_Error::fatal('Coachingactiviteiten zijn niet <a href="'.CRM_Utils_System::url('civicrm/admin/form/caseinvoicesettings'). '">ingesteld</a>');
+		}
+		$this->ondersteunings_activity_type_ids = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'ondersteunings_activity_type_ids', null, 0);
+		if (!is_array($this->ondersteunings_activity_type_ids) || empty($this->ondersteunings_activity_type_ids)) {
+			CRM_Core_Error::fatal('Ondersteuningsactiviteiten zijn niet <a href="'.CRM_Utils_System::url('civicrm/admin/form/caseinvoicesettings'). '">ingesteld</a>');
+		}
 
     //set the context for redirection for any task actions
     $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $form);
@@ -92,26 +105,11 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
 
 
   public function setDefaultValues() {
-    $defaults = array();
-
-    $km = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'km', null, 0.4);
-    $defaults['km'] = $km;
-
-    $paymentInstruments = civicrm_api3('Contribution', 'getoptions', array('field' => 'payment_instrument_id'));
-    foreach($paymentInstruments['values'] as $paymentInstrumentId => $label) {
-      if ($label == 'Factuur') {
-        $defaults['payment_instrument_id'] = $paymentInstrumentId;
-      }
-    }
-
-    $statusValues = CRM_Core_PseudoConstant::get('CRM_Contribute_DAO_Contribution', 'contribution_status_id');
-    foreach($statusValues as $status_id => $label) {
-      if ($label == 'Pending') {
-        $defaults['contribution_status_id'] = $status_id;
-        break;
-      }
-    }
-    return $defaults;
+		$defaults = array();
+		$defaults['km'] = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'km', null, 0.4);
+		$defaults['payment_instrument_id'] = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'payment_instrument_id', null, 0);
+		$defaults['contribution_status_id'] = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'contribution_status_id', null, 0);
+		return $defaults;
   }
 
   protected function getInvoiceSettingsForCases($caseIds) {
@@ -121,6 +119,7 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
     while ($dao->fetch()) {
       $settings[$dao->entity_id] = array(
         'rate' => $dao->rate,
+        'rate_ondersteuning' => $dao->rate_ondersteuning,
         'rounding' => $dao->rounding,
         'invoice_contact' => $dao->invoice_contact,
         'case_financial_type' => $dao->case_financial_type,
@@ -220,8 +219,6 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
       $contributionCount = $contributionCount + $this->createInvoicePerParentCase($save_on_case_id, $cases_to_invoice, $caseInvoiceSettings, $caseContacts, $km, $payment_instrument_id, $contribution_status_id);
     }
 
-    CRM_Core_BAO_Setting::setItem((float) $km, 'be.werkmetzin.caseinvoice', 'km');
-
     CRM_Core_Session::setStatus(''.$contributionCount.' factuur(en) aangemaakt', '', 'success');
   }
 
@@ -251,7 +248,8 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
         $financial_type_id = $invoiceSetting['case_financial_type'];
         $minutes = $this->calculateRoundedMinutes($activity['duration'], $invoiceSetting['rounding']);
         $hours = $minutes > 0 ? ($minutes / 60) : 0;
-        $price = round($hours * $invoiceSetting['rate'], 2);
+        $rate = $this->determineRate($activity, $invoiceSetting);
+        $price = round($hours * $rate, 2);
         $display_name = civicrm_api3('Contact', 'getvalue', array('return' => 'display_name', 'id' => $caseContacts[$case_id]));
         $label = CRM_Utils_Date::customFormat($activity['activity_date_time'], $config->dateformatFull) . ' ' . $activity['activity_type_label'] . ' - ' . $display_name . ': ' . $minutes . ' minuten';
 
@@ -324,6 +322,30 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
 
     return $contributionCount;
   }
+
+	/**
+	 * Determine the rate for this activity
+	 *
+	 * @param array $activity
+	 * @param array $invoiceSetting
+	 *
+	 * @return float
+	 */
+  private function determineRate($activity, $invoiceSetting) {
+
+		if (in_array($activity['activity_type_id'], $this->coachings_activity_type_ids)) {
+			if (empty($invoiceSetting['rate'])) {
+				CRM_Core_Error::fatal('Uurtarief (coachingsactiviteiten) not set for case: '.$activity['display_name'].' (id = '.$activity['case_id'].') ');
+			}
+			return (float) $invoiceSetting['rate'];
+		} elseif (in_array($activity['activity_type_id'], $this->ondersteunings_activity_type_ids)) {
+			if (empty($invoiceSetting['rate_ondersteuning'])) {
+				CRM_Core_Error::fatal('Uurtarief (ondersteuningsactiviteiten) not set for case: '.$activity['display_name'].' (id = '.$activity['case_id'].') ');
+			}
+			return (float) $invoiceSetting['rate_ondersteuning'];
+		}
+		CRM_Core_Error::fatal('Uurtarief not set for case: '.$activity['display_name'].' (id = '.$activity['case_id'].') ');
+	}
 
   private function createInvoice($line_items, $contact_id, $financial_type_id, $contribution_status_id, $payment_instrument_id, $total, $total_tax_amount, $case_id) {
     $contributionParams = array();
