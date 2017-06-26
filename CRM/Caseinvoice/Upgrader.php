@@ -158,6 +158,12 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
 		return TRUE;
 	}
 
+	public function upgrade_1009() {
+  	$custom_field_id = civicrm_api3('CustomField', 'getvalue', array('return' => 'id', 'name' => 'rate_coach', 'custom_group_id' => 'case_invoice_settings'));
+  	civicrm_api3('CustomField', 'delete', array('id' => $custom_field_id));
+  	return true;
+	}
+
   public function uninstall() {
     try {
       $case_info_settings_gid = civicrm_api3('CustomGroup', 'getvalue', array('name' => 'case_invoice_settings'));
