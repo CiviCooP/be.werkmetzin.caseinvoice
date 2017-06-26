@@ -95,6 +95,54 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
 		return true;
 	}
 
+	public function upgrade_1007() {
+		$this->executeCustomDataFile('xml/coach_invoice_settings.xml');
+
+		$result = civicrm_api3('OptionValue', 'create', array(
+			'name' => 'daypart',
+			'label' => 'Dagdeel',
+			'option_group_id' => 'activity_type',
+			'component_id' => 7, // CiviCase
+		));
+		$day_part = civicrm_api3('OptionValue', 'getsingle', array('id' => $result['id']));
+
+		$result = civicrm_api3('OptionValue', 'create', array(
+			'name' => 'day',
+			'label' => 'Dag',
+			'option_group_id' => 'activity_type',
+			'component_id' => 7, // CiviCase
+		));
+		$day = civicrm_api3('OptionValue', 'getsingle', array('id' => $result['id']));
+
+
+		$coaching_bedrijven_dossier = civicrm_api3('CaseType', 'getsingle', array('name' => 'coaching_voor_bedrijven'));
+		$coaching_bedrijven_dossier['definition']['activityTypes'][] = array('name' => $day_part['name']);
+		$coaching_bedrijven_dossier['definition']['activityTypes'][] = array('name' => $day['name']);
+		civicrm_api3('CaseType', 'create', $coaching_bedrijven_dossier);
+
+		$coachingstraject = civicrm_api3('CaseType', 'getsingle', array('name' => 'coachingstraject'));
+		$coachingstraject['definition']['activityTypes'][] = array('name' => $day_part['name']);
+		$coachingstraject['definition']['activityTypes'][] = array('name' => $day['name']);
+		civicrm_api3('CaseType', 'create', $coachingstraject);
+
+		$coachingstraject_io = civicrm_api3('CaseType', 'getsingle', array('name' => 'coachingstraject_io'));
+		$coachingstraject_io['definition']['activityTypes'][] = array('name' => $day_part['name']);
+		$coachingstraject_io['definition']['activityTypes'][] = array('name' => $day['name']);
+		civicrm_api3('CaseType', 'create', $coachingstraject_io);
+
+		$advies = civicrm_api3('CaseType', 'getsingle', array('name' => 'advies'));
+		$advies['definition']['activityTypes'][] = array('name' => $day_part['name']);
+		$advies['definition']['activityTypes'][] = array('name' => $day['name']);
+		civicrm_api3('CaseType', 'create', $advies);
+
+		$opleiding = civicrm_api3('CaseType', 'getsingle', array('name' => 'opleiding'));
+		$opleiding['definition']['activityTypes'][] = array('name' => $day_part['name']);
+		$opleiding['definition']['activityTypes'][] = array('name' => $day['name']);
+		civicrm_api3('CaseType', 'create', $opleiding);
+
+		return true;
+	}
+
   public function uninstall() {
     try {
       $case_info_settings_gid = civicrm_api3('CustomGroup', 'getvalue', array('name' => 'case_invoice_settings'));

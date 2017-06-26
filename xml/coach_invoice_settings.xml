@@ -129,6 +129,78 @@
       <in_selector>0</in_selector>
       <custom_group_name>coach_invoice_settings</custom_group_name>
     </CustomField>
+    <CustomField>
+      <name>rate_daypart</name>
+      <label>Tarief per dagdeel</label>
+      <data_type>Money</data_type>
+      <html_type>Text</html_type>
+      <is_required>0</is_required>
+      <is_searchable>1</is_searchable>
+      <is_search_range>1</is_search_range>
+      <weight>7</weight>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
+      <text_length>255</text_length>
+      <note_columns>60</note_columns>
+      <note_rows>4</note_rows>
+      <column_name>rate_daypart</column_name>
+      <in_selector>0</in_selector>
+      <custom_group_name>coach_invoice_settings</custom_group_name>
+    </CustomField>
+    <CustomField>
+      <name>max_daypart</name>
+      <label>Maximum dagdelen</label>
+      <data_type>Int</data_type>
+      <html_type>Text</html_type>
+      <is_required>0</is_required>
+      <is_searchable>0</is_searchable>
+      <is_search_range>0</is_search_range>
+      <weight>8</weight>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
+      <text_length>255</text_length>
+      <note_columns>60</note_columns>
+      <note_rows>4</note_rows>
+      <column_name>max_daypart</column_name>
+      <in_selector>0</in_selector>
+      <custom_group_name>coach_invoice_settings</custom_group_name>
+    </CustomField>
+    <CustomField>
+      <name>rate_day</name>
+      <label>Tarief per dag</label>
+      <data_type>Money</data_type>
+      <html_type>Text</html_type>
+      <is_required>0</is_required>
+      <is_searchable>1</is_searchable>
+      <is_search_range>1</is_search_range>
+      <weight>9</weight>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
+      <text_length>255</text_length>
+      <note_columns>60</note_columns>
+      <note_rows>4</note_rows>
+      <column_name>rate_day</column_name>
+      <in_selector>0</in_selector>
+      <custom_group_name>coach_invoice_settings</custom_group_name>
+    </CustomField>
+    <CustomField>
+      <name>max_day</name>
+      <label>Maximum dagen</label>
+      <data_type>Int</data_type>
+      <html_type>Text</html_type>
+      <is_required>0</is_required>
+      <is_searchable>0</is_searchable>
+      <is_search_range>0</is_search_range>
+      <weight>10</weight>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
+      <text_length>255</text_length>
+      <note_columns>60</note_columns>
+      <note_rows>4</note_rows>
+      <column_name>max_day</column_name>
+      <in_selector>0</in_selector>
+      <custom_group_name>coach_invoice_settings</custom_group_name>
+    </CustomField>
   </CustomFields>
   <OptionGroups>
     <OptionGroup>

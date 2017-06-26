@@ -46,7 +46,13 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
 
   protected $coachings_activity_type_ids = array();
 	protected $ondersteunings_activity_type_ids = array();
+	protected $day_part_activity_type_ids = array();
+	protected $day_activity_type_ids = array();
+	protected $facturatie_fee_activity_type_ids = array();
 	protected $activity_status_id;
+
+	protected $facturatie_fee_custom_group;
+	protected $facturatie_fee_custom_field;
 
   public function __construct() {
 		$this->activity_status_id = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'activity_status_id', null, 0);
@@ -61,6 +67,17 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
 		if (!is_array($this->ondersteunings_activity_type_ids) || empty($this->ondersteunings_activity_type_ids)) {
 			CRM_Core_Error::fatal('Ondersteuningsactiviteiten zijn niet <a href="'.CRM_Utils_System::url('civicrm/admin/form/caseinvoicesettings'). '">ingesteld</a>');
 		}
+		$this->day_part_activity_type_ids = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'day_part_activity_type_ids', null, 0);
+		if (!is_array($this->day_part_activity_type_ids) || empty($this->day_part_activity_type_ids)) {
+			CRM_Core_Error::fatal('Dagdeelactiviteiten zijn niet <a href="'.CRM_Utils_System::url('civicrm/admin/form/caseinvoicesettings'). '">ingesteld</a>');
+		}
+		$this->day_activity_type_ids = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'day_activity_type_ids', null, 0);
+		if (!is_array($this->day_activity_type_ids) || empty($this->day_activity_type_ids)) {
+			CRM_Core_Error::fatal('Dagactiviteiten zijn niet <a href="'.CRM_Utils_System::url('civicrm/admin/form/caseinvoicesettings'). '">ingesteld</a>');
+		}
+		$this->facturatie_fee_custom_group = civicrm_api3('CustomGroup', 'getsingle', array('name' => 'facturatie_fee'));
+		$this->facturatie_fee_custom_field = civicrm_api3('CustomField', 'getsingle', array('name' => 'amount', 'custom_group_id' => $this->facturatie_fee_custom_group['id']));
+		$this->facturatie_fee_activity_type_ids = $this->facturatie_fee_custom_group['extends_entity_column_value'];
 
     $this->km = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'km', null, 0.4);
     $this->case_types = CRM_Case_PseudoConstant::caseType();
@@ -80,6 +97,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
           'client_name' => array(
             'name' => 'sort_name',
             'title' => ts('Client'),
+            'no_display' => true,
             'required' => TRUE,
           ),
           'id' => array(
@@ -100,6 +118,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
             'title' => ts('Case Subject'),
             'default' => TRUE,
             'required' => TRUE,
+						'no_display' => true,
           ),
         ),
         'filters' => array(
@@ -119,6 +138,8 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
         'fields' => array(
           'activity_type_id' => array(
             'title' => ts('Activity Type'),
+						'default' => true,
+						'required' => true,
           ),
           'activity_date_time' => array(
             'title' => ts('Activity Date'),
@@ -127,6 +148,8 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
           'duration' => array(
             'title' => ts('Duration'),
             'default' => true,
+						'required' => true,
+						'no_display' => true,
           ),
         ),
         'filters' => array(
@@ -135,7 +158,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
             'operatorType' => CRM_Report_Form::OP_DATE,
             'type' => CRM_Utils_Type::T_DATE,
           ),
-        )
+        ),
       ),
       'staff' => array(
         'dao' => 'CRM_Contact_DAO_Contact',
@@ -185,7 +208,16 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     parent::select();
 
     $activity = $this->_aliases['civicrm_activity'];
-    $this->_select .= ", {$activity}.activity_type_id as activity_type_id, coach_invoice_settings.rate_coach AS invoice_settings_rate_coach, coach_invoice_settings.rate_ondersteuning AS invoice_settings_rate_ondersteuning, invoice_settings.rounding AS invoice_settings_rounding, {$activity}.duration AS activity_duration, km.km as activity_km";
+    $this->_select .= ", 
+    	{$activity}.activity_type_id as activity_type_id, 
+    	coach_invoice_settings.rate_coach AS invoice_settings_rate_coach, 
+    	coach_invoice_settings.rate_ondersteuning AS invoice_settings_rate_ondersteuning,
+    	coach_invoice_settings.rate_daypart AS invoice_settings_rate_day_part,
+    	coach_invoice_settings.rate_day AS invoice_settings_rate_day,
+    	invoice_settings.rounding AS invoice_settings_rounding, 
+    	{$activity}.duration AS activity_duration, 
+    	km.km as activity_km,
+    	facturatie_fee.amount as activity_fee_amount";
   }
 
   public function from() {
@@ -206,7 +238,8 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     $this->_from .= "INNER JOIN civicrm_contact {$staff} ON {$staff}.id = {$relationship}.contact_id_b ";
     $this->_from .= "LEFT JOIN civicrm_value_case_invoice_settings invoice_settings ON invoice_settings.entity_id = {$case}.id ";
 		$this->_from .= "LEFT JOIN civicrm_value_coach_invoice_settings coach_invoice_settings ON coach_invoice_settings.entity_id = {$case}.id ";
-    $this->_from .= "LEFT JOIN civicrm_value_km km ON km.entity_id = {$activity}.id";
+    $this->_from .= "LEFT JOIN civicrm_value_km km ON km.entity_id = {$activity}.id ";
+		$this->_from .= "LEFT JOIN civicrm_value_facturatie_fee facturatie_fee ON facturatie_fee.entity_id = {$activity}.id ";
   }
 
   public function where() {
@@ -214,10 +247,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
 
     $activity = $this->_aliases['civicrm_activity'];
     $case = $this->_aliases['civicrm_case'];
-    $client = $this->_aliases['client'];
-    $staff = $this->_aliases['staff'];
     $relationship = $this->_aliases['civicrm_relationship'];
-    $relationship_type = $this->_aliases['civicrm_relationship_type'];
 
     $this->_where .= " AND {$activity}.is_deleted = '0' AND {$activity}.is_current_revision = '1' AND {$case}.is_deleted = '0'";
     $this->_where .= "AND {$relationship}.is_active = '1' AND ({$relationship}.start_date IS NULL OR DATE({$relationship}.start_date) <= NOW()) AND ({$relationship}.end_date IS NULL OR DATE({$relationship}.end_date) >= NOW())";
@@ -226,7 +256,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
       $this->_where .= " AND {$relationship}.contact_id_b = '".$session->get('userID')."'";
     }
 
-		$activity_type_ids = array_merge($this->coachings_activity_type_ids, $this->ondersteunings_activity_type_ids);
+		$activity_type_ids = array_merge($this->coachings_activity_type_ids, $this->ondersteunings_activity_type_ids, $this->facturatie_fee_activity_type_ids, $this->day_part_activity_type_ids, $this->day_activity_type_ids);
     $this->_where .= " AND {$activity}.activity_type_id IN (".implode(',', $activity_type_ids).") ";
     $this->_where .= " AND {$activity}.status_id = '".$this->activity_status_id."'";
   }
@@ -235,11 +265,19 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     $activity = $this->_aliases['civicrm_activity'];
     $case = $this->_aliases['civicrm_case'];
     $client = $this->_aliases['client'];
-    $staff = $this->_aliases['staff'];
-    $relationship = $this->_aliases['civicrm_relationship'];
-    $relationship_type = $this->_aliases['civicrm_relationship_type'];
-
-    $this->_orderBy = "ORDER BY `{$client}`.`sort_name` ASC, {$case}.id ASC, {$activity}.activity_date_time DESC";
+		$this->_sections = array(
+			'civicrm_case_id' => array(
+				'name' => 'id',
+				'title' => ts('Case'),
+				'column' => 'id',
+				'order' => 'asc',
+				'alias' => 'case_civireport',
+				'dbAlias' => "{$case}.id",
+				'tplField' => 'civicrm_case_id',
+			)
+		);
+		$this->_orderBy = "ORDER BY `{$client}`.`sort_name` ASC, {$case}.id ASC, {$activity}.activity_date_time DESC";
+		$this->assign('sections', $this->_sections);
   }
 
   public function modifyColumnHeaders() {
@@ -251,6 +289,12 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     $this->_columnHeaders['invoice_settings_rate_ondersteuning'] = array(
     	'no_display' => true,
 		);
+		$this->_columnHeaders['invoice_settings_rate_day_part'] = array(
+			'no_display' => true,
+		);
+		$this->_columnHeaders['invoice_settings_rate_day'] = array(
+			'no_display' => true,
+		);
     $this->_columnHeaders['invoice_settings_rounding'] = array(
       'no_display' => true,
     );
@@ -260,13 +304,20 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
 		$this->_columnHeaders['activity_type_id'] = array(
 			'no_display' => true,
 		);
+		$this->_columnHeaders['quantity'] = array(
+			'title' => 'Aantal',
+			'type' => CRM_Utils_Type::T_FLOAT,
+		);
     $this->_columnHeaders['to_invoice'] = array(
-      'title' => 'Te facturen (uren)',
+      'title' => 'Te facturen',
       'type' => CRM_Utils_Type::T_MONEY,
     );
     $this->_columnHeaders['activity_km'] = array(
       'no_display' => true,
     );
+    $this->_columnHeaders['activity_fee_amount'] = array(
+    	'no_display' => true,
+		);
     $this->_columnHeaders['to_invoice_km'] = array(
       'title' => 'Te facturen (KM a € '.$km.' per KM)',
       'type' => CRM_Utils_Type::T_MONEY,
@@ -284,12 +335,6 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
    */
   public function alterDisplay(&$rows) {
     $km = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'km', null, 0.4);
-    $activity = $this->_aliases['civicrm_activity'];
-    $case = $this->_aliases['civicrm_case'];
-    $client = $this->_aliases['client'];
-    $staff = $this->_aliases['staff'];
-    $relationship = $this->_aliases['civicrm_relationship'];
-    $relationship_type = $this->_aliases['civicrm_relationship_type'];
 
     $entryFound = FALSE;
     foreach ($rows as $rowNum => $row) {
@@ -317,10 +362,11 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
         $entryFound = TRUE;
       }
 
-      $roundedMinutes = $this->calculateRoundedMinutes($row['activity_duration'], $row['invoice_settings_rounding']);
-      $hours = $roundedMinutes > 0 ? ($roundedMinutes / 60) : 0;
+      $quantity = $this->detemineQuantity($row['activity_type_id'], $row);
       $rate = $this->determineRate($row['activity_type_id'], $row);
-      $rows[$rowNum]['to_invoice'] = round($hours * $rate, 2);
+			$unit = $this->determineUnit($row['activity_type_id'], $row);
+			$rows[$rowNum]['quantity'] = number_format($quantity, 2, ',', '.'). ' '.$unit;
+      $rows[$rowNum]['to_invoice'] = round($quantity * $rate, 2);
       if (empty($rows[$rowNum]['to_invoice'])) {
         $rows[$rowNum]['to_invoice'] = '0.00';
       }
@@ -335,6 +381,38 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     }
   }
 
+	protected function determineUnit($activity_type_id, $row) {
+		if (in_array($activity_type_id, $this->coachings_activity_type_ids)) {
+			return 'uur';
+		} elseif (in_array($activity_type_id, $this->ondersteunings_activity_type_ids)) {
+			return 'uur';
+		} elseif (in_array($activity_type_id, $this->day_part_activity_type_ids)) {
+			return 'dagdeel';
+		} elseif (in_array($activity_type_id, $this->day_activity_type_ids)) {
+			return 'dag';
+		}
+		return '';
+	}
+
+  protected function detemineQuantity($activity_type_id, $row) {
+		if (in_array($activity_type_id, $this->coachings_activity_type_ids)) {
+			$roundedMinutes = $this->calculateRoundedMinutes($row['activity_duration'], $row['invoice_settings_rounding']);
+			$hours = $roundedMinutes > 0 ? ($roundedMinutes / 60) : 0;
+			return $hours;
+		} elseif (in_array($activity_type_id, $this->ondersteunings_activity_type_ids)) {
+			$roundedMinutes = $this->calculateRoundedMinutes($row['activity_duration'], $row['invoice_settings_rounding']);
+			$hours = $roundedMinutes > 0 ? ($roundedMinutes / 60) : 0;
+			return $hours;
+		} elseif (in_array($activity_type_id, $this->facturatie_fee_activity_type_ids)) {
+			return 1;
+		} elseif (in_array($activity_type_id, $this->day_part_activity_type_ids)) {
+			return 1;
+		} elseif (in_array($activity_type_id, $this->day_activity_type_ids)) {
+			return 1;
+		}
+		return 0.00;
+	}
+
   protected function determineRate($activity_type_id, $row) {
 		if (in_array($activity_type_id, $this->coachings_activity_type_ids)) {
 			if (empty($row['invoice_settings_rate_coach'])) {
@@ -346,6 +424,21 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
 				return 0.00;
 			}
 			return (float) $row['invoice_settings_rate_ondersteuning'];
+		} elseif (in_array($activity_type_id, $this->day_part_activity_type_ids)) {
+			if (empty($row['invoice_settings_rate_day_part'])) {
+				return 0.00;
+			}
+			return (float) $row['invoice_settings_rate_day_part'];
+		} elseif (in_array($activity_type_id, $this->day_activity_type_ids)) {
+			if (empty($row['invoice_settings_rate_day'])) {
+				return 0.00;
+			}
+			return (float) $row['invoice_settings_rate_day'];
+		} elseif (in_array($activity_type_id, $this->facturatie_fee_activity_type_ids)) {
+			if (empty($row['activity_fee_amount'])) {
+				return 0.00;
+			}
+			return (float) $row['activity_fee_amount'];
 		}
 		return 0.00;
 	}

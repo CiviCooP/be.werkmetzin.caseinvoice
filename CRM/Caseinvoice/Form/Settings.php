@@ -37,6 +37,26 @@ class CRM_Caseinvoice_Form_Settings extends CRM_Core_Form {
 			), TRUE
 		);
 
+		$this->addSelect('day_part_activity_type_ids', array(
+				'label'       => ts('Dagdeel activiteiten'),
+				'entity'      => 'activity',
+				'field'       => 'activity_type_id',
+				'multiple'    => 'multiple',
+				'option_url'  => NULL,
+				'placeholder' => ts('- any -')
+			), TRUE
+		);
+
+		$this->addSelect('day_activity_type_ids', array(
+				'label'       => ts('Dag activiteiten'),
+				'entity'      => 'activity',
+				'field'       => 'activity_type_id',
+				'multiple'    => 'multiple',
+				'option_url'  => NULL,
+				'placeholder' => ts('- any -')
+			), TRUE
+		);
+
 		$this->addSelect('activity_status_id', array(
 				'entity' => 'activity',
 				'field' => 'status_id',
@@ -70,6 +90,14 @@ class CRM_Caseinvoice_Form_Settings extends CRM_Core_Form {
 		if (!is_array($defaults['ondersteunings_activity_type_ids'])) {
 			$defaults['ondersteunings_activity_type_ids'] = array();
 		}
+		$defaults['day_part_activity_type_ids'] = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'day_part_activity_type_ids', null, 0);
+		if (!is_array($defaults['day_part_activity_type_ids'])) {
+			$defaults['day_part_activity_type_ids'] = array();
+		}
+		$defaults['day_activity_type_ids'] = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'day_activity_type_ids', null, 0);
+		if (!is_array($defaults['day_activity_type_ids'])) {
+			$defaults['day_activity_type_ids'] = array();
+		}
 
 
 		return $defaults;
@@ -82,6 +110,8 @@ class CRM_Caseinvoice_Form_Settings extends CRM_Core_Form {
 		CRM_Core_BAO_Setting::setItem($this->_submitValues['activity_status_id'], 'be.werkmetzin.caseinvoice', 'activity_status_id');
 		CRM_Core_BAO_Setting::setItem($this->_submitValues['coachings_activity_type_ids'], 'be.werkmetzin.caseinvoice', 'coachings_activity_type_ids');
 		CRM_Core_BAO_Setting::setItem($this->_submitValues['ondersteunings_activity_type_ids'], 'be.werkmetzin.caseinvoice', 'ondersteunings_activity_type_ids');
+		CRM_Core_BAO_Setting::setItem($this->_submitValues['day_part_activity_type_ids'], 'be.werkmetzin.caseinvoice', 'day_part_activity_type_ids');
+		CRM_Core_BAO_Setting::setItem($this->_submitValues['day_activity_type_ids'], 'be.werkmetzin.caseinvoice', 'day_activity_type_ids');
 		CRM_Core_Session::setStatus('', ts('Case invoice Settings saved'), 'success');
 		parent::postProcess();
 	}

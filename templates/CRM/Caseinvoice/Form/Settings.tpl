@@ -18,6 +18,16 @@
         <div class="clear"></div>
     </div>
     <div class="crm-section">
+        <div class="label">{$form.day_part_activity_type_ids.label}</div>
+        <div class="content">{$form.day_part_activity_type_ids.html}</div>
+        <div class="clear"></div>
+    </div>
+    <div class="crm-section">
+        <div class="label">{$form.day_activity_type_ids.label}</div>
+        <div class="content">{$form.day_activity_type_ids.html}</div>
+        <div class="clear"></div>
+    </div>
+    <div class="crm-section">
         <div class="label">{$form.activity_status_id.label}</div>
         <div class="content">{$form.activity_status_id.html}</div>
         <div class="clear"></div>
