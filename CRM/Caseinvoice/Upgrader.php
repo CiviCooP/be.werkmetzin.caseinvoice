@@ -143,6 +143,21 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
 		return true;
 	}
 
+	public function upgrade_1008() {
+		$this->executeCustomDataFile('xml/factuurcoach.xml');
+		$activityStatus = CRM_Core_PseudoConstant::get('CRM_Activity_DAO_Activity', 'status_id', array('flip' => 1, 'labelColumn' => 'name'));
+		$betaald_id = $activityStatus['Betaald'];
+		$sql = "
+					INSERT INTO civicrm_value_factuurcoach (entity_id, gefactureerd) 
+					SELECT id, 1 as gefactureerd 
+					FROM civicrm_activity
+					WHERE status_id = %1 AND is_current_revision = 1 AND is_deleted = 0";
+		$params[1] = array($betaald_id, 'Integer');
+		CRM_Core_DAO::executeQuery($sql, $params);
+
+		return TRUE;
+	}
+
   public function uninstall() {
     try {
       $case_info_settings_gid = civicrm_api3('CustomGroup', 'getvalue', array('name' => 'case_invoice_settings'));

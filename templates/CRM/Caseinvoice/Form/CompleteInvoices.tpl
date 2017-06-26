@@ -13,6 +13,17 @@
         {strip}
         <table class="form-layout">
           <tr>
+            <td>
+              <label>{$form.coach.label}</label>
+              <br />
+                {$form.coach.html}
+            </td>
+
+            <td>
+            </td>
+
+          </tr>
+          <tr>
             <td class="crm-case-common-form-block-case_type">
               <label>{$form.case_type_id.label}</label> <br />
               {$form.case_type_id.html}
@@ -62,13 +73,12 @@
         <table class="selector row-highlight">
           <tr class="sticky">
               <th scope="col" title="Select Rows">{$form.toggleSelect.html}</th>
-              <th scope="col">{ts}Contact{/ts}</th>
+              <th scope="col">{ts}Coach{/ts}</th>
               <th scope="col">{ts}Case{/ts}</th>
-              <th scope="col">{ts}Parent Case{/ts}</th>
-              <th scope="col">{ts}Activity date{/ts}</th>
               <th scope="col">{ts}Activity type{/ts}</th>
-              <th scope="col">{ts}Activity status{/ts}</th>
-              <th scrope="col">{ts}Duration{/ts}</th>
+              <th scope="col">{ts}Activity date{/ts}</th>
+              <th scrope="col">{ts}Aantal{/ts}</th>
+              <th scrope="col">{ts}Te factureren{/ts}</th>
               <th scrope="col">{ts}KM{/ts}</th>
           </tr>
 
@@ -77,32 +87,26 @@
             <tr id='rowid{$row.activity_id}' class="{cycle values="odd-row,even-row"} {$row.class}">
               {assign var=cbName value=$row.checkbox}
               {assign var=contact_id value=$row.contact_id}
+              {assign var=coach_id value=$row.coach_id}
               {assign var=case_id value=$row.case_id}
               {assign var=parent_case_id value=$row.parent_case_id}
               {assign var=parent_contact_id value=$row.parent_contact_id}
               <td>{$form.$cbName.html}</td>
               <td>
-                <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$contact_id`"}">
-                  {$row.display_name}
+                <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$coach_id`"}">
+                  {$row.coach_display_name}
                 </a>
               </td>
               <td>
                 <a href="{crmURL p='civicrm/contact/view/case' q="reset=1&action=view&id=`$case_id`&cid=`$contact_id`"}">
-                  {$row.case_type_label} ({$row.case_status_label})
+                    {$row.display_name} - {$row.case_type_label} ({$row.case_status_label})
                 </a>
               </td>
-              <td>
-                {if (!empty($parent_case_id))}
-                <a href="{crmURL p='civicrm/contact/view/case' q="reset=1&action=view&id=`$parent_case_id`&cid=`$parent_contact_id`"}">
-                    {$row.parent_display_name} - {$row.parent_case_type_label} ({$row.parent_case_status_label})
-                </a>
-                {/if}
-              </td>
-              <td>{$row.activity_date_time|crmDate}</td>
               <td>{$row.activity_type_label}</td>
-              <td>{$row.activity_status_label}</td>
-              <td>{$row.duration}</td>
-              <td>{$row.km}</td>
+              <td>{$row.activity_date_time|crmDate}</td>
+              <td>{$row.quantity}</td>
+              <td>{$row.to_invoice|crmMoney}</td>
+              <td>{$row.to_invoice_km|crmMoney}</td>
             </tr>
           {/foreach}
 

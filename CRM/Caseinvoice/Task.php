@@ -23,8 +23,8 @@ class CRM_Caseinvoice_Task {
     if (!(self::$_complete_invoice_tasks)) {
       self::$_complete_invoice_tasks = array(
         1 => array(
-          'title' => ts('Werk activiteitstatus bij'),
-          'class' => 'CRM_Caseinvoice_Form_Task_SetActivityStatus',
+          'title' => ts('Werk facturatie status bij'),
+          'class' => 'CRM_Caseinvoice_Form_Task_SetActivityInvoiceStatus',
           'result' => FALSE,
         ),
       );

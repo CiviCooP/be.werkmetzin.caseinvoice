@@ -4,7 +4,7 @@
  * @license http://www.gnu.org/licenses/agpl-3.0.html
  */
 
-class CRM_Caseinvoice_Form_Task_SetActivityStatus extends CRM_Caseinvoice_Form_CompleteInvoiceTask {
+class CRM_Caseinvoice_Form_Task_SetActivityInvoiceStatus extends CRM_Caseinvoice_Form_CompleteInvoiceTask {
 
   /**
    * Are we operating in "single mode", i.e. deleting one
@@ -40,14 +40,7 @@ class CRM_Caseinvoice_Form_Task_SetActivityStatus extends CRM_Caseinvoice_Form_C
    * @return void
    */
   public function buildQuickForm() {
-    $activityStatus = CRM_Core_PseudoConstant::get('CRM_Activity_DAO_Activity', 'status_id', array('flip' => 1, 'labelColumn' => 'name'));
-    $this->addSelect('status_id',
-      array('entity' => 'activity', 'multiple' => false, 'option_url' => NULL, 'placeholder' => ts('- any -'))
-    );
-    $this->setDefaults(array('status_id' => array($activityStatus['Betaald'])));
-
-
-    $this->addDefaultButtons(ts('Werk activiteitsstatus bij'), 'done');
+    $this->addDefaultButtons(ts('Werk facturatie status van activiteiten bij'), 'done');
   }
 
   /**
@@ -58,20 +51,24 @@ class CRM_Caseinvoice_Form_Task_SetActivityStatus extends CRM_Caseinvoice_Form_C
    */
   public function postProcess() {
     $count=0;
-    $submittedValues = $this->_submitValues;
     for($i=0; $i<count($this->activities); $i++) {
       if (in_array($this->activities[$i]['activity_id'], $this->_activityHolderIds)) {
-        $params = array();
-        $params['id'] = $this->activities[$i]['activity_id'];
-        $params['status_id'] = $submittedValues['status_id'];
-        civicrm_api3('Activity', 'create', $params);
+      	$activity_id = $this->activities[$i]['activity_id'];
+				$id = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_value_factuurcoach WHERE entity_id = %1", array(1=>array($activity_id, 'Integer')));
+      	if ($id) {
+      		$updateSql = "UPDATE civicrm_value_factuurcoach SET gefactureerd = 1 WHERE entity_id = %1";
+      		$params[1] = array($activity_id, 'Integer');
+      		CRM_Core_DAO::executeQuery($updateSql, $params);
+				} else {
+      		$insertSql = "INSERT INTO civicrm_value_factuurcoach (entity_id, gefactureerd) VALUES (%1, 1)";
+					$params[1] = array($activity_id, 'Integer');
+					CRM_Core_DAO::executeQuery($insertSql, $params);
+				}
         $count++;
       }
     }
 
     CRM_Core_Session::setStatus('Updated '.$count.' activities', '', 'success');
-
-
   }
 
 }

@@ -259,6 +259,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
 		$activity_type_ids = array_merge($this->coachings_activity_type_ids, $this->ondersteunings_activity_type_ids, $this->facturatie_fee_activity_type_ids, $this->day_part_activity_type_ids, $this->day_activity_type_ids);
     $this->_where .= " AND {$activity}.activity_type_id IN (".implode(',', $activity_type_ids).") ";
     $this->_where .= " AND {$activity}.status_id = '".$this->activity_status_id."'";
+		$this->_where .= " AND {$activity}.id NOT IN (select entity_id FROM civicrm_value_factuurcoach WHERE gefactureerd = 1)";
   }
 
   public function orderBy() {
