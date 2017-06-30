@@ -233,7 +233,7 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
     parent::select();
 
     $activity = $this->_aliases['civicrm_activity'];
-    $this->_select .= ", invoice_settings.rate_coach AS invoice_settings_rate_coach, invoice_settings.rounding AS invoice_settings_rounding, {$activity}.duration AS activity_duration, km.km as activity_km";
+    $this->_select .= ", invoice_settings.rounding AS invoice_settings_rounding, {$activity}.duration AS activity_duration, km.km as activity_km";
   }
 
   public function from() {
