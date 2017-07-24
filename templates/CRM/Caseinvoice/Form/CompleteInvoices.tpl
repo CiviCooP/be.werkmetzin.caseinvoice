@@ -20,6 +20,9 @@
             </td>
 
             <td>
+              <label>{$form.client.label}</label>
+              <br />
+                {$form.client.html}
             </td>
 
           </tr>

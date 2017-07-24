@@ -3,7 +3,7 @@
   <item>
     <path>civicrm/case/generateinvoice</path>
     <page_callback>CRM_Caseinvoice_Controller_GenerateInvoices</page_callback>
-    <title>Uitgaande facturatie</title>
+    <title>HK Overzicht Uurtarief klaar om te factureren</title>
     <access_arguments>access CiviContribute,edit contributions,access all cases and activities</access_arguments>
   </item>
   <item>

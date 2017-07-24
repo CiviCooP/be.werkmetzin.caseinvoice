@@ -146,6 +146,9 @@ class CRM_Caseinvoice_Form_CompleteInvoices extends CRM_Core_Form_Search {
 		if (!empty($formValues['coach'])) {
 			$where .= " AND coach.id IN (".$formValues['coach'].")";
 		}
+    if (!empty($formValues['client'])) {
+      $where .= " AND contact.id IN (".$formValues['client'].")";
+    }
 
 		$where .= " AND a.id NOT IN (select entity_id FROM civicrm_value_factuurcoach WHERE gefactureerd = 1)";
 
@@ -349,6 +352,15 @@ class CRM_Caseinvoice_Form_CompleteInvoices extends CRM_Core_Form_Search {
 				'option_url' => NULL,
 				'placeholder' => ts('- any -'))
 		);
+
+    $this->addEntityRef('client', ts('Client'),
+      array(
+        'entity' => 'contact',
+        'api' => array('params' => array()),
+        'multiple' => 'multiple',
+        'option_url' => NULL,
+        'placeholder' => ts('- any -'))
+    );
 
     $this->add('select', 'case_type_id',
       ts('Case Type'),

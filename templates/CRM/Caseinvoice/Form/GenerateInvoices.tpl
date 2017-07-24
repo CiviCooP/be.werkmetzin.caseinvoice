@@ -14,6 +14,20 @@
         {strip}
         <table class="form-layout">
           <tr>
+            <td>
+              <label>{$form.coach.label}</label>
+              <br />
+                {$form.coach.html}
+            </td>
+
+            <td>
+              <label>{$form.client.label}</label>
+              <br />
+                {$form.client.html}
+            </td>
+
+          </tr>
+          <tr>
             <td class="crm-case-common-form-block-case_type">
               <label>{$form.case_type_id.label}</label> <br />
               {$form.case_type_id.html}
@@ -69,8 +83,10 @@
               <th scope="col">{ts}Activity date{/ts}</th>
               <th scope="col">{ts}Activity type{/ts}</th>
               <th scope="col">{ts}Activity status{/ts}</th>
-              <th scrope="col">{ts}Duration{/ts}</th>
-              <th scrope="col">{ts}KM{/ts}</th>
+              <th scope="col">{ts}Duration{/ts}</th>
+              <th scope="col">{ts}KM{/ts}</th>
+              <th scope ="col">{ts}Te facturen{/ts}</th>
+            <th scope ="col">{ts}Te facturen (km){/ts}</th>
           </tr>
 
 
@@ -104,6 +120,8 @@
               <td>{$row.activity_status_label}</td>
               <td>{$row.duration}</td>
               <td>{$row.km}</td>
+              <td>{$row.to_invoice|crmMoney}</td>
+              <td>{$row.to_invoice_km|crmMoney}</td>
             </tr>
           {/foreach}
 

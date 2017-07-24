@@ -7,6 +7,9 @@
 class CRM_Caseinvoice_Query {
 
   public static function query($formValues, $onlyNotInvoicedActivities=true, $includeFixedPriceCases=false) {
+    $km = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'km', null, 0.4);
+
+    $coach_relationship_type_id = civicrm_api3('RelationshipType', 'getvalue', array('name_b_a' => 'Coach', 'return' => 'id'));
 		$activity_status_id = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'activity_status_id', null, 0);
 		if (empty($activity_status_id)) {
 			CRM_Core_Error::fatal('Activiteitsstatus is niet <a href="'.CRM_Utils_System::url('civicrm/admin/form/caseinvoicesettings'). '">ingesteld</a>');
@@ -75,8 +78,19 @@ class CRM_Caseinvoice_Query {
       $paramCount++;
     }
 
+    $where .= " AND case_role.relationship_type_id = %".$paramCount." AND case_role.is_active = '1'";
+    $params[$paramCount] = array($coach_relationship_type_id, 'Integer');
+    $paramCount++;
+
     if (!$includeFixedPriceCases) {
       $where .= " AND ((parent_invoice_settings.id IS NULL OR parent_invoice_settings.fixed_price_hourly_rate != 'fixed_price') AND invoice_settings.fixed_price_hourly_rate != 'fixed_price')";
+    }
+
+    if (!empty($formValues['coach'])) {
+      $where .= " AND coach.id IN (".$formValues['coach'].")";
+    }
+    if (!empty($formValues['client'])) {
+      $where .= " AND contact.id IN (".$formValues['client'].")";
     }
 
     $where .= " AND a.duration IS NOT NULL AND a.duration > 0";
@@ -92,6 +106,9 @@ class CRM_Caseinvoice_Query {
             INNER JOIN civicrm_case c on ca.case_id = c.id
             INNER JOIN civicrm_case_contact cc on c.id = cc.case_id
             INNER JOIN civicrm_contact contact on contact.id = cc.contact_id
+            
+            INNER JOIN civicrm_relationship case_role ON case_role.case_id = c.id
+            INNER JOIN civicrm_contact coach on coach.id = case_role.contact_id_b
             
             LEFT JOIN `{$coachingsinformatie['table_name']}` ON `{$coachingsinformatie['table_name']}`.entity_id = c.id 
             
@@ -124,6 +141,7 @@ class CRM_Caseinvoice_Query {
 
     $dao = CRM_Core_DAO::executeQuery($sql, $params);
     while($dao->fetch()) {
+      $invoiceSettings = CRM_Caseinvoice_Util::getInvoiceSettingsForCases(array($dao->case_id));
       $row = array(
         'activity_id' => $dao->activity_id,
         'activity_date_time' => $dao->activity_date_time,
@@ -145,8 +163,20 @@ class CRM_Caseinvoice_Query {
         'parent_contact_id' => $dao->parent_contact_id,
         'parent_display_name' => $dao->parent_display_name,
         'km' => $dao->km,
+        'to_invoice' => 0.00,
+        'to_invoice_km' => 0.00,
         'checkbox' => CRM_Core_Form::CB_PREFIX . $dao->activity_id,
       );
+
+      if (!CRM_Caseinvoice_Util::validInvoiceSettings($row, $invoiceSettings[$dao->case_id])) {
+        continue;
+      }
+
+      $row['to_invoice'] = CRM_Caseinvoice_Util::calculateInvoiceAmount($row, $invoiceSettings[$dao->case_id]);
+      if (!empty($row['km'])) {
+        $row['to_invoice_km'] = round($km * $row['km'], 2);
+      }
+
       $return[] = $row;
     }
     return $return;

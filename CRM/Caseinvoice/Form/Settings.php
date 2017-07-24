@@ -2,7 +2,7 @@
 
 class CRM_Caseinvoice_Form_Settings extends CRM_Core_Form {
 	public function buildQuickForm() {
-		$this->add('text', 'km', ts('KM Vergoedeing'), array(),true);
+		$this->add('text', 'km', ts('KM Vergoeding'), array(),true);
 
 		$this->addFormRule(array('CRM_Caseinvoice_Form_Settings', 'checkKm'));
 

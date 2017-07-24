@@ -65,6 +65,24 @@ class CRM_Caseinvoice_Form_GenerateInvoices extends CRM_Core_Form_Search {
 
   public function buildQuickForm() {
 
+    $this->addEntityRef('coach', ts('Coach'),
+      array(
+        'entity' => 'contact',
+        'api' => array('params' => array('contact_sub_type' => "Coach")),
+        'multiple' => 'multiple',
+        'option_url' => NULL,
+        'placeholder' => ts('- any -'))
+    );
+
+    $this->addEntityRef('client', ts('Client'),
+      array(
+        'entity' => 'contact',
+        'api' => array('params' => array()),
+        'multiple' => 'multiple',
+        'option_url' => NULL,
+        'placeholder' => ts('- any -'))
+    );
+
     $this->add('select', 'case_type_id',
       ts('Case Type'),
       CRM_Case_PseudoConstant::caseType('title', FALSE),
