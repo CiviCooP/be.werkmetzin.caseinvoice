@@ -2,6 +2,12 @@
 
 require_once 'caseinvoice.civix.php';
 
+function caseinvoice_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
+  if ($formName == 'CRM_Casecontribution_Page_CaseTab') {
+    $tplName = 'CRM/Caseinvoice/Page/CaseTab.tpl';
+  }
+}
+
 function caseinvoice_civicrm_buildForm($formName, &$form) {
   if ($form instanceof CRM_Case_Form_CustomData) {
     $customGroupName = civicrm_api3('CustomGroup', 'getvalue', array('return' => 'name', 'id' => $form->getVar('_groupID')));
@@ -21,6 +27,10 @@ function caseinvoice_civicrm_buildForm($formName, &$form) {
       }
 
     }
+  }
+  if ($form instanceof  CRM_Contribute_Form_Contribution) {
+    $pendingStatusId = civicrm_api3('OptionValue', 'getvalue', array('option_group' => 'contribution_status', 'name' => 'pending', 'return' => 'value'));
+    $form->setDefaults(array('contribution_status_id' => $pendingStatusId));
   }
   if ($form instanceof CRM_Contribute_Form_ContributionView) {
     $lineItem = CRM_Price_BAO_LineItem::getLineItems($form->get('id'), 'contribution', NULL, TRUE, TRUE);
