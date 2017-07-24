@@ -190,6 +190,17 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
     return true;
   }
 
+  public function upgrade_1011() {
+    $opleiding_dossier = civicrm_api3('CaseType', 'getsingle', array('name' => 'opleiding'));
+    $opleiding_dossier['definition']['activityTypes'][] = array('name' => 'factureren_fixed_price');
+    civicrm_api3('CaseType', 'create', $opleiding_dossier);
+
+    $advies_dossier = civicrm_api3('CaseType', 'getsingle', array('name' => 'advies'));
+    $advies_dossier['definition']['activityTypes'][] = array('name' => 'factureren_fixed_price');
+    civicrm_api3('CaseType', 'create', $advies_dossier);
+    return true;
+  }
+
   public function uninstall() {
     try {
       $case_info_settings_gid = civicrm_api3('CustomGroup', 'getvalue', array('name' => 'case_invoice_settings'));
