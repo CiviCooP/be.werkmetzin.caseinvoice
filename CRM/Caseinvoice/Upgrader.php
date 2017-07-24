@@ -19,6 +19,14 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
     $coaching_bedrijven_dossier = civicrm_api3('CaseType', 'getsingle', array('name' => 'coaching_voor_bedrijven'));
     $coaching_bedrijven_dossier['definition']['activityTypes'][] = array('name' => $factureren_fixed_price['name']);
     civicrm_api3('CaseType', 'create', $coaching_bedrijven_dossier);
+
+    $opleiding_dossier = civicrm_api3('CaseType', 'getsingle', array('name' => 'opleiding'));
+    $opleiding_dossier['definition']['activityTypes'][] = array('name' => $factureren_fixed_price['name']);
+    civicrm_api3('CaseType', 'create', $opleiding_dossier);
+
+    $advies_dossier = civicrm_api3('CaseType', 'getsingle', array('name' => 'advies'));
+    $advies_dossier['definition']['activityTypes'][] = array('name' => $factureren_fixed_price['name']);
+    civicrm_api3('CaseType', 'create', $advies_dossier);
   }
 
   public function upgrade_1001() {
