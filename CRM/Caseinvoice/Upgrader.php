@@ -209,6 +209,21 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
     return true;
   }
 
+  public function upgrade_1012() {
+    $activity_types = array('Intakegesprek','Verdiepingsgesprek','Synthese','Online coaching','Groepscoaching','Begeleiding individu','Begeleiding groep','Voorbereiding','Bevraging','Terugkom','Opleiding','Intern overleg','Overleg met organisatie','Verwerking','daypart','day');
+    $activity_type_ids = array();
+    foreach($activity_types as $activity_type) {
+      $activity_type_id = CRM_Core_DAO::singleValueQuery("SELECT value FROM civicrm_option_value WHERE name = %1 and option_group_id = 2", array(1=>array($activity_type, 'String')));
+      if (!empty($activity_type_id)) {
+        $activity_type_ids[] = $activity_type_id;
+      }
+    }
+    $activity_type_ids = CRM_Core_DAO::VALUE_SEPARATOR.implode($activity_type_ids, CRM_Core_DAO::VALUE_SEPARATOR).CRM_Core_DAO::VALUE_SEPARATOR;
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_group SET `extends_entity_column_value` = %1 WHERE `name` = 'KM'", array(1=>array($activity_type_ids, 'String')));
+
+    return true;
+  }
+
   public function uninstall() {
     try {
       $case_info_settings_gid = civicrm_api3('CustomGroup', 'getvalue', array('name' => 'case_invoice_settings'));
