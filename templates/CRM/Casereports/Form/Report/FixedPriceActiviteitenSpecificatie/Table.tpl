@@ -74,7 +74,7 @@
                 {$l}if $isValueChanged{$r}
 
                 {$l}if $column == 'civicrm_case_id'{$r}
-                    {$l}assign var=printValue value="`$row.civicrm_case_subject` - `$row.client_client_name`"{$r}
+                    {$l}assign var=printValue value="`$row.client_client_name` - `$row.civicrm_case_subject`"{$r}
                 {$l}elseif $sections.{$column}.type & 4{$r}
                 {$l}assign var=printValue value=$row.{$column}|crmDate{$r}
                 {$l}elseif $sections.{$column}.type eq 1024{$r}
