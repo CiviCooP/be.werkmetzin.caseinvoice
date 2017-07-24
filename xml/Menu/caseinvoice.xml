@@ -9,7 +9,7 @@
   <item>
     <path>civicrm/case/completeinvoice</path>
     <page_callback>CRM_Caseinvoice_Controller_CompleteInvoices</page_callback>
-    <title>Afronding facturatie</title>
+    <title>HK Afronding facturatie</title>
     <access_arguments>access CiviContribute,edit contributions,access all cases and activities</access_arguments>
   </item>
   <item>
