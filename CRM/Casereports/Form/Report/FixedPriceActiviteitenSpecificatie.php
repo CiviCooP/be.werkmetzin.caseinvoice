@@ -277,6 +277,18 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
     $this->buildParentCaseList();
   }
 
+  /**
+   * Compile the report content.
+   *
+   * Although this function is super-short it is useful to keep separate so it can be over-ridden by report classes.
+   *
+   * @return string
+   */
+  public function compileContent() {
+    $templateFile = $this->getHookedTemplateFileName();
+    return $this->_formValues['report_header'] .  CRM_Core_Form::$_template->fetch($templateFile);
+  }
+
   protected function buildParentCaseList() {
     $parentCases = array('' => ts(' - Alle dossiers - '));
     $case = $this->_aliases['civicrm_case'];

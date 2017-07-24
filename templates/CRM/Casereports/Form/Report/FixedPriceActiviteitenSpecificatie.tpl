@@ -23,7 +23,9 @@
         {include file="CRM/Casereports/Form/Report/FixedPriceActiviteitenSpecificatie/Actions.tpl"}
 
         {*Statistics at the Top of the page*}
+        {if $outputMode eq 'html'}
         {include file="CRM/Report/Form/Statistics.tpl" top=true}
+        {/if}
 
         {*include the graph*}
         {include file="CRM/Report/Form/Layout/Graph.tpl"}
@@ -32,7 +34,9 @@
         {include file="CRM/Casereports/Form/Report/FixedPriceActiviteitenSpecificatie/Table.tpl"}
         <br />
         {*Statistics at the bottom of the page*}
+        {if $outputMode eq 'html'}
         {include file="CRM/Report/Form/Statistics.tpl" bottom=true}
+        {/if}
 
         {include file="CRM/Report/Form/ErrorMessage.tpl"}
     </div>
