@@ -90,7 +90,7 @@ class CRM_Caseinvoice_Query {
       $where .= " AND coach.id IN (".$formValues['coach'].")";
     }
     if (!empty($formValues['client'])) {
-      $where .= " AND contact.id IN (".$formValues['client'].")";
+      $where .= " AND (contact.id IN (".$formValues['client'].") OR parent_contact.id IN (".$formValues['client']."))";
     }
 
     $where .= " AND a.duration IS NOT NULL AND a.duration > 0";
