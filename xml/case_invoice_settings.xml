@@ -4,8 +4,10 @@
   <CustomGroups>
     <CustomGroup>
       <name>case_invoice_settings</name>
-      <title>Facturatieinstellingen</title>
+      <title>Facturatieinstellingen Klant</title>
       <extends>Case</extends>
+      <extends_entity_column_value_option_group>activity_type</extends_entity_column_value_option_group>
+      <extends_entity_column_value>factureren_aanbreng_fee,factureren_outplacement_fee</extends_entity_column_value>
       <style>Inline</style>
       <collapse_display>1</collapse_display>
       <help_pre></help_pre>
@@ -40,6 +42,24 @@
       <custom_group_name>case_invoice_settings</custom_group_name>
     </CustomField>
     <CustomField>
+      <name>total_amount</name>
+      <label>Totaalbedrag (fixed price)</label>
+      <data_type>Money</data_type>
+      <html_type>Text</html_type>
+      <is_required>0</is_required>
+      <is_searchable>1</is_searchable>
+      <is_search_range>1</is_search_range>
+      <weight>2</weight>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
+      <text_length>255</text_length>
+      <note_columns>60</note_columns>
+      <note_rows>4</note_rows>
+      <column_name>total_amount</column_name>
+      <in_selector>0</in_selector>
+      <custom_group_name>case_invoice_settings</custom_group_name>
+    </CustomField>
+    <CustomField>
       <name>invoice_setting</name>
       <label>Verzamelfactuur / factuur per subdossier</label>
       <data_type>String</data_type>
@@ -47,7 +67,7 @@
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
       <is_search_range>0</is_search_range>
-      <weight>2</weight>
+      <weight>3</weight>
       <is_active>1</is_active>
       <is_view>0</is_view>
       <text_length>255</text_length>
@@ -56,24 +76,6 @@
       <column_name>invoice_setting</column_name>
       <in_selector>0</in_selector>
       <option_group_name>invoice_setting</option_group_name>
-      <custom_group_name>case_invoice_settings</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <name>total_amount</name>
-      <label>Totaalbedrag (fixed price)</label>
-      <data_type>Money</data_type>
-      <html_type>Text</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>1</is_search_range>
-      <weight>3</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>total_amount</column_name>
-      <in_selector>0</in_selector>
       <custom_group_name>case_invoice_settings</custom_group_name>
     </CustomField>
     <CustomField>
@@ -96,6 +98,25 @@
       <custom_group_name>case_invoice_settings</custom_group_name>
     </CustomField>
     <CustomField>
+      <name>case_financial_type</name>
+      <label>Financial type</label>
+      <data_type>Int</data_type>
+      <html_type>Select</html_type>
+      <is_required>0</is_required>
+      <is_searchable>1</is_searchable>
+      <is_search_range>0</is_search_range>
+      <weight>5</weight>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
+      <text_length>255</text_length>
+      <note_columns>60</note_columns>
+      <note_rows>4</note_rows>
+      <column_name>case_financial_type</column_name>
+      <in_selector>0</in_selector>
+      <option_group_name>case_financial_type</option_group_name>
+      <custom_group_name>case_invoice_settings</custom_group_name>
+    </CustomField>
+    <CustomField>
       <name>rate</name>
       <label>Uurtarief (coachingsactiviteiten)</label>
       <data_type>Money</data_type>
@@ -103,7 +124,7 @@
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
       <is_search_range>1</is_search_range>
-      <weight>5</weight>
+      <weight>6</weight>
       <is_active>1</is_active>
       <is_view>0</is_view>
       <text_length>255</text_length>
@@ -121,7 +142,7 @@
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
       <is_search_range>1</is_search_range>
-      <weight>6</weight>
+      <weight>7</weight>
       <is_active>1</is_active>
       <is_view>0</is_view>
       <text_length>255</text_length>
@@ -133,7 +154,7 @@
     </CustomField>
     <CustomField>
       <name>rounding</name>
-      <label>Afronding</label>
+      <label>Afronding tijdseenheid</label>
       <data_type>String</data_type>
       <html_type>Select</html_type>
       <is_required>0</is_required>
@@ -151,25 +172,6 @@
       <custom_group_name>case_invoice_settings</custom_group_name>
     </CustomField>
     <CustomField>
-      <name>case_financial_type</name>
-      <label>Financial type</label>
-      <data_type>Int</data_type>
-      <html_type>Select</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>9</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>case_financial_type</column_name>
-      <in_selector>0</in_selector>
-      <option_group_name>case_financial_type</option_group_name>
-      <custom_group_name>case_invoice_settings</custom_group_name>
-    </CustomField>
-    <CustomField>
       <name>invoice_contact</name>
       <label>Factuur op naam van (indien anders dan client of parent case)</label>
       <data_type>ContactReference</data_type>
@@ -177,7 +179,7 @@
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
       <is_search_range>0</is_search_range>
-      <weight>10</weight>
+      <weight>9</weight>
       <is_active>1</is_active>
       <is_view>0</is_view>
       <text_length>255</text_length>

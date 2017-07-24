@@ -164,6 +164,32 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
   	return true;
 	}
 
+	public function upgrade_1010() {
+    $custom_group_id = civicrm_api3('CustomGroup', 'getvalue', array('return' => 'id', 'name' => 'case_invoice_settings'));
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_field SET label = 'Afronding tijdseenheid' WHERE `name` = 'rounding' AND custom_group_id = %1", array(1=>array($custom_group_id, 'Integer')));
+
+    $case_types = array('coachingstraject', 'coaching_voor_bedrijven', 'advies', 'opleiding', 'coachingstraject_io');
+    $case_type_ids = array();
+    $this->executeCustomDataFile('xml/case_invoice_settings.xml');
+    foreach($case_types as $case_type) {
+      $case_type_ids[] = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_case_type WHERE name = %1", array(1=>array($case_type, 'String')));
+    }
+    $case_type_ids = CRM_Core_DAO::VALUE_SEPARATOR.implode($case_type_ids, CRM_Core_DAO::VALUE_SEPARATOR).CRM_Core_DAO::VALUE_SEPARATOR;
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_group SET `extends_entity_column_value` = %1, title = 'Facturatieinstellingen Klant' WHERE `name` = 'case_invoice_settings'", array(1=>array($case_type_ids, 'String')));
+
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_field SET weight = '1' WHERE `name` = 'fixed_price_hourly_rate' AND custom_group_id = %1", array(1=>array($custom_group_id, 'Integer')));
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_field SET weight = '2' WHERE `name` = 'total_amount' AND custom_group_id = %1", array(1=>array($custom_group_id, 'Integer')));
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_field SET weight = '3' WHERE `name` = 'invoice_setting' AND custom_group_id = %1", array(1=>array($custom_group_id, 'Integer')));
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_field SET weight = '4' WHERE `name` = 'advace_payments' AND custom_group_id = %1", array(1=>array($custom_group_id, 'Integer')));
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_field SET weight = '5' WHERE `name` = 'case_financial_type' AND custom_group_id = %1", array(1=>array($custom_group_id, 'Integer')));
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_field SET weight = '6' WHERE `name` = 'rate' AND custom_group_id = %1", array(1=>array($custom_group_id, 'Integer')));
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_field SET weight = '7' WHERE `name` = 'rate_ondersteuning' AND custom_group_id = %1", array(1=>array($custom_group_id, 'Integer')));
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_field SET weight = '8' WHERE `name` = 'rounding' AND custom_group_id = %1", array(1=>array($custom_group_id, 'Integer')));
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_field SET weight = '9' WHERE `name` = 'invoice_contact' AND custom_group_id = %1", array(1=>array($custom_group_id, 'Integer')));
+
+    return true;
+  }
+
   public function uninstall() {
     try {
       $case_info_settings_gid = civicrm_api3('CustomGroup', 'getvalue', array('name' => 'case_invoice_settings'));
