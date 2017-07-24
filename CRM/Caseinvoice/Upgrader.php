@@ -27,6 +27,8 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
     $advies_dossier = civicrm_api3('CaseType', 'getsingle', array('name' => 'advies'));
     $advies_dossier['definition']['activityTypes'][] = array('name' => $factureren_fixed_price['name']);
     civicrm_api3('CaseType', 'create', $advies_dossier);
+
+    $this->executeCustomDataFile('xml/factuur.xml');
   }
 
   public function upgrade_1001() {
@@ -221,6 +223,11 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
     $activity_type_ids = CRM_Core_DAO::VALUE_SEPARATOR.implode($activity_type_ids, CRM_Core_DAO::VALUE_SEPARATOR).CRM_Core_DAO::VALUE_SEPARATOR;
     CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_group SET `extends_entity_column_value` = %1 WHERE `name` = 'KM'", array(1=>array($activity_type_ids, 'String')));
 
+    return true;
+  }
+
+  public function upgrade_1013() {
+    $this->executeCustomDataFile('xml/factuur.xml');
     return true;
   }
 
