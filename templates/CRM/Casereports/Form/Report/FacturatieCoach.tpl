@@ -9,7 +9,7 @@
 {elseif $section eq 2}
     <div class="crm-block crm-content-block crm-report-layoutTable-form-block">
         {*include the table layout*}
-        {include file="CRM/Report/Form/Layout/Table.tpl"}
+        {include file="CRM/Casereports/Form/Report/FacturatieCoach/Table.tpl"}
     </div>
 {else}
     {if $criteriaForm OR $instanceForm OR $instanceFormError}
@@ -20,7 +20,7 @@
 
     <div class="crm-block crm-content-block crm-report-form-block">
         {*include actions*}
-        {include file="CRM/Report/Form/Actions.tpl"}
+        {include file="CRM/Casereports/Form/Report/FacturatieCoach/Actions.tpl"}
 
         {*Statistics at the Top of the page*}
         {include file="CRM/Report/Form/Statistics.tpl" top=true}

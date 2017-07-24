@@ -40,6 +40,8 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
 
   protected $_customGroupExtends = array('Case', 'Activity');
 
+  protected $_add2groupSupported = FALSE;
+
   protected $_absoluteUrl = TRUE;
 
   protected $km;
@@ -260,6 +262,10 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     $this->_where .= " AND {$activity}.activity_type_id IN (".implode(',', $activity_type_ids).") ";
     $this->_where .= " AND {$activity}.status_id = '".$this->activity_status_id."'";
 		$this->_where .= " AND {$activity}.id NOT IN (select entity_id FROM civicrm_value_factuurcoach WHERE gefactureerd = 1)";
+
+    if (isset($this->_submitValues['export_case_id']) && !empty($this->_submitValues['export_case_id'])) {
+      $this->_where .= " AND {$case}.id = '".$this->_submitValues['export_case_id']."'";
+    }
   }
 
   public function orderBy() {
@@ -279,6 +285,25 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
 		);
 		$this->_orderBy = "ORDER BY `{$client}`.`sort_name` ASC, {$case}.id ASC, {$activity}.activity_date_time DESC";
 		$this->assign('sections', $this->_sections);
+  }
+
+  public function doTemplateAssignment(&$rows) {
+    parent::doTemplateAssignment($rows);
+
+    $this->buildCaseListForExport();
+  }
+
+  protected function buildCaseListForExport() {
+    $parentCases = array('' => ts(' - Alle dossiers - '));
+    $case = $this->_aliases['civicrm_case'];
+    $client = $this->_aliases['client'];
+    $select = "SELECT DISTINCT {$case}.id, {$case}.subject, {$client}.sort_name as client";
+    $sql = "{$select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy}";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    while($dao->fetch()) {
+      $parentCases[$dao->id] = $dao->client .' - ' . $dao->subject;
+    }
+    $this->add('select', 'export_case_id', ts('Select case'), $parentCases, true);
   }
 
   public function modifyColumnHeaders() {

@@ -9,7 +9,7 @@
 {elseif $section eq 2}
     <div class="crm-block crm-content-block crm-report-layoutTable-form-block">
         {*include the table layout*}
-        {include file="CRM/Report/Form/Layout/Table.tpl"}
+        {include file="CRM/Casereports/Form/Report/FixedPriceActiviteitenSpecificatie/Table.tpl"}
     </div>
 {else}
     {if $criteriaForm OR $instanceForm OR $instanceFormError}
