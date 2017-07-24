@@ -42,6 +42,8 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
 
   protected $_absoluteUrl = TRUE;
 
+  protected $_add2groupSupported = FALSE;
+
   protected $km;
 
   public function __construct() {
@@ -65,21 +67,12 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
           'client_name' => array(
             'name' => 'sort_name',
             'title' => ts('Client'),
-            'default' => TRUE,
+            'required' => TRUE,
+            'no_display' => TRUE,
           ),
           'id' => array(
             'no_display' => TRUE,
             'required' => TRUE,
-          ),
-        ),
-        'order_bys' => array(
-          'sort_name' => array(
-            'name' => 'sort_name',
-            'title' => ts('Client'),
-            'default' => '1',
-            'default_weight' => '0',
-            'default_order' => 'ASC',
-            'default_is_section' => '0',
           ),
         ),
       ),
@@ -93,7 +86,8 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
           ),
           'subject' => array(
             'title' => ts('Case Subject'),
-            'default' => TRUE,
+            'required' => TRUE,
+            'no_display' => TRUE,
           ),
         ),
         'filters' => array(
@@ -108,16 +102,6 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
             'options' => $this->case_statuses,
           ),
         ),
-        'order_bys' => array(
-          'subject' => array(
-            'name' => 'subject',
-            'title' => ts('Case Subject'),
-            'default' => '1',
-            'default_weight' => '1',
-            'default_order' => 'ASC',
-            'default_is_section' => '1',
-          ),
-        ),
       ),
       'civicrm_subcase' => array(
         'dao' => 'CRM_Case_DAO_Case',
@@ -130,8 +114,24 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
           ),
           'subcase_subject' => array(
             'name' => 'subject',
-            'title' => ts('Dossier onderwerp (subcase)'),
+            'title' => ts('Dossier onderwerp (Subdossier)'),
             'default' => TRUE,
+          ),
+        ),
+      ),
+      'client_subcase' => array(
+        'dao' => 'CRM_Contact_DAO_Contact',
+        'alias' => 'client_subcase',
+        'fields' => array(
+          'client_subcase_name' => array(
+            'name' => 'sort_name',
+            'title' => ts('Client (subdossier)'),
+            'default' => TRUE,
+          ),
+          'client_subcase_id' => array(
+            'name' => 'id',
+            'no_display' => TRUE,
+            'required' => TRUE,
           ),
         ),
       ),
@@ -168,26 +168,10 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
             'type' => CRM_Utils_Type::T_DATE,
           ),
         ),
-        'order_bys' => array(
-          'activity_date_time' => array(
-            'name' => 'activity_date_time',
-            'title' => ts('Activity Date'),
-            'default' => '1',
-            'default_weight' => '2',
-            'default_order' => 'DESC',
-            'default_is_section' => '0',
-          ),
-        ),
       ),
       'staff' => array(
         'dao' => 'CRM_Contact_DAO_Contact',
         'alias' => 'staff',
-        'fields' => array(
-          'sort_name' => array(
-            'title' => ts('Staff Member'),
-            'default' => FALSE,
-          ),
-        ),
         'filters' => array(
           'my_cases' => array(
             'title' => ts('My cases'),
@@ -201,22 +185,6 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
       ),
       'civicrm_relationship' => array(
         'dao' => 'CRM_Contact_DAO_Relationship',
-        'filters' => array(
-          'relationship_type_id' => array(
-            'title' => ts('Staff Relationship'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => $this->rel_types,
-          ),
-        ),
-      ),
-      'civicrm_relationship_type' => array(
-        'dao' => 'CRM_Contact_DAO_RelationshipType',
-        'fields' => array(
-          'label_b_a' => array(
-            'title' => ts('Relationship'),
-            'default' => FALSE,
-          ),
-        ),
       ),
     );
 
@@ -241,20 +209,17 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
     $case = $this->_aliases['civicrm_case'];
     $subcase = $this->_aliases['civicrm_subcase'];
     $client = $this->_aliases['client'];
-    $staff = $this->_aliases['staff'];
-    $relationship = $this->_aliases['civicrm_relationship'];
-    $relationship_type = $this->_aliases['civicrm_relationship_type'];
+    $client_subcase = $this->_aliases['client_subcase'];
 
     $this->_from = "FROM civicrm_activity {$activity} ";
     $this->_from .= "INNER JOIN civicrm_case_activity ON civicrm_case_activity.activity_id = {$activity}.id ";
     $this->_from .= "INNER JOIN civicrm_case {$subcase} ON civicrm_case_activity.case_id = {$subcase}.id ";
-    $this->_from .= "INNER JOIN civicrm_value_caselink_case ON civicrm_value_caselink_case.entity_id = {$subcase}.id ";
-    $this->_from .= "INNER JOIN civicrm_case {$case} ON  civicrm_value_caselink_case.case_id = {$case}.id ";
-    $this->_from .= "INNER JOIN civicrm_case_contact ON civicrm_case_contact.case_id = ${case}.id ";
-    $this->_from .= "INNER JOIN civicrm_contact {$client} on {$client}.id = civicrm_case_contact.contact_id ";
-    $this->_from .= "INNER JOIN civicrm_relationship {$relationship} ON {$relationship}.case_id = {$case}.id ";
-    $this->_from .= "INNER JOIN civicrm_relationship_type {$relationship_type} ON {$relationship_type}.id = {$relationship}.relationship_type_id ";
-    $this->_from .= "INNER JOIN civicrm_contact {$staff} ON {$staff}.id = {$relationship}.contact_id_b ";
+    $this->_from .= "INNER JOIN civicrm_case_contact civicrm_subcase_contact ON civicrm_subcase_contact.case_id = {$subcase}.id ";
+    $this->_from .= "INNER JOIN civicrm_contact {$client_subcase} on {$client_subcase}.id = civicrm_subcase_contact.contact_id ";
+    $this->_from .= "LEFT JOIN civicrm_value_caselink_case ON civicrm_value_caselink_case.entity_id = {$subcase}.id ";
+    $this->_from .= "LEFT JOIN civicrm_case {$case} ON civicrm_value_caselink_case.case_id = {$case}.id OR civicrm_case_activity.case_id = {$case}.id ";
+    $this->_from .= "LEFT JOIN civicrm_case_contact ON civicrm_case_contact.case_id = ${case}.id ";
+    $this->_from .= "LEFT JOIN civicrm_contact {$client} on {$client}.id = civicrm_case_contact.contact_id ";
     $this->_from .= "LEFT JOIN civicrm_value_case_invoice_settings invoice_settings ON invoice_settings.entity_id = {$case}.id ";
     $this->_from .= "LEFT JOIN civicrm_value_km km ON km.entity_id = {$activity}.id";
   }
@@ -264,20 +229,65 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
 
     $activity = $this->_aliases['civicrm_activity'];
     $case = $this->_aliases['civicrm_case'];
-    $client = $this->_aliases['client'];
-    $staff = $this->_aliases['staff'];
-    $relationship = $this->_aliases['civicrm_relationship'];
-    $relationship_type = $this->_aliases['civicrm_relationship_type'];
 
     $this->_where .= " AND {$activity}.is_deleted = '0' AND {$activity}.is_current_revision = '1' AND {$case}.is_deleted = '0'";
-    $this->_where .= "AND {$relationship}.is_active = '1' AND ({$relationship}.start_date IS NULL OR DATE({$relationship}.start_date) <= NOW()) AND ({$relationship}.end_date IS NULL OR DATE({$relationship}.end_date) >= NOW())";
     if (CRM_Utils_Array::value("my_cases_value", $this->_params)) {
       $session = CRM_Core_Session::singleton();
-      $this->_where .= " AND {$relationship}.contact_id_b = '".$session->get('userID')."'";
+      $relationshipSelect = "
+        SELECT case_id 
+        FROM civicrm_relationship 
+        WHERE is_active = '1' 
+        AND (start_date IS NULL OR DATE(start_date) <= NOW()) 
+        AND (end_date IS NULL OR DATE(end_date) >= NOW())
+        AND contact_id_b = '" . $session->get('userID') . "'";
+
+      $this->_where .= " AND {$case}.id IN (".$relationshipSelect.")";
+    }
+
+    if (isset($this->_submitValues['export_parent_case_id']) && !empty($this->_submitValues['export_parent_case_id'])) {
+      $this->_where .= " AND {$case}.id = '".$this->_submitValues['export_parent_case_id']."'";
     }
   }
 
+  public function orderBy() {
+    $activity = $this->_aliases['civicrm_activity'];
+    $case = $this->_aliases['civicrm_case'];
+    $client = $this->_aliases['client'];
+    $this->_sections = array(
+      'civicrm_case_id' => array(
+        'name' => 'id',
+        'title' => ts('Case'),
+        'column' => 'id',
+        'order' => 'asc',
+        'alias' => 'case_civireport',
+        'dbAlias' => "{$case}.id",
+        'tplField' => 'civicrm_case_id',
+      )
+    );
+    $this->_orderBy = "ORDER BY `{$client}`.`sort_name` ASC, {$case}.id ASC, {$activity}.activity_date_time DESC";
+    $this->assign('sections', $this->_sections);
+  }
+
   public function modifyColumnHeaders() {
+  }
+
+  public function doTemplateAssignment(&$rows) {
+    parent::doTemplateAssignment($rows);
+
+    $this->buildParentCaseList();
+  }
+
+  protected function buildParentCaseList() {
+    $parentCases = array('' => ts(' - Alle dossiers - '));
+    $case = $this->_aliases['civicrm_case'];
+    $client = $this->_aliases['client'];
+    $select = "SELECT DISTINCT {$case}.id, {$case}.subject, {$client}.sort_name as client";
+    $sql = "{$select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy}";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    while($dao->fetch()) {
+      $parentCases[$dao->id] = $dao->client .' - ' . $dao->subject;
+    }
+    $this->add('select', 'export_parent_case_id', ts('Select parent case'), $parentCases, true);
   }
 
   /**
@@ -320,6 +330,13 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
         $url = CRM_Utils_System::url("civicrm/contact/view", 'reset=1&cid=' . $row['client_id'],$this->_absoluteUrl);
         $rows[$rowNum]['client_client_name_link'] = $url;
         $rows[$rowNum]['client_client_name_hover'] = ts("View contact");
+        $entryFound = TRUE;
+      }
+
+      if (array_key_exists('client_subcase_client_subcase_name', $row) && !empty($rows[$rowNum]['client_subcase_client_subcase_id'])) {
+        $url = CRM_Utils_System::url("civicrm/contact/view", 'reset=1&cid=' . $row['client_subcase_client_subcase_id'],$this->_absoluteUrl);
+        $rows[$rowNum]['client_subcase_client_subcase_name_link'] = $url;
+        $rows[$rowNum]['client_subcase_client_subcase_name_hover'] = ts("View contact");
         $entryFound = TRUE;
       }
 
