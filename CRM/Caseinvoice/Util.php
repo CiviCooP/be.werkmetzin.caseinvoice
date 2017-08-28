@@ -72,6 +72,7 @@ class CRM_Caseinvoice_Util {
 
   public static function calculateInvoiceAmountLabel($activity, $invoiceSetting, $contact_id) {
     $config = CRM_Core_Config::singleton();
+    $minutes = CRM_Caseinvoice_Util::calculateRoundedMinutes($activity['duration'], $invoiceSetting['rounding']);
     $display_name = civicrm_api3('Contact', 'getvalue', array('return' => 'display_name', 'id' => $contact_id));
     $label = CRM_Utils_Date::customFormat($activity['activity_date_time'], $config->dateformatFull) . ' ' . $activity['activity_type_label'] . ' - ' . $display_name . ': ' . $minutes . ' minuten';
     return $label;
