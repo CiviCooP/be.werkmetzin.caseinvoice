@@ -45,7 +45,6 @@ class CRM_Caseinvoice_Util_CompleteInvoices {
 
   public function query($formValues) {
     $km = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'km', null, 0.4);
-    $coach_relationship_type_id = civicrm_api3('RelationshipType', 'getvalue', array('name_b_a' => 'Coach', 'return' => 'id'));
 
     $activity_type_ids = array_merge($this->coachings_activity_type_ids, $this->ondersteunings_activity_type_ids, $this->facturatie_fee_activity_type_ids, $this->day_part_activity_type_ids, $this->day_activity_type_ids);
 
@@ -100,10 +99,6 @@ class CRM_Caseinvoice_Util_CompleteInvoices {
       $paramCount++;
     }
 
-    $where .= " AND case_role.relationship_type_id = %".$paramCount." AND case_role.is_active = '1'";
-    $params[$paramCount] = array($coach_relationship_type_id, 'Integer');
-    $paramCount++;
-
     if (!empty($formValues['coach'])) {
       $where .= " AND coach.id IN (".$formValues['coach'].")";
     }
@@ -131,8 +126,8 @@ class CRM_Caseinvoice_Util_CompleteInvoices {
             INNER JOIN civicrm_case_contact cc on c.id = cc.case_id
             INNER JOIN civicrm_contact contact on contact.id = cc.contact_id
             
-            INNER JOIN civicrm_relationship case_role ON case_role.case_id = c.id
-            INNER JOIN civicrm_contact coach on coach.id = case_role.contact_id_b
+            INNER JOIN civicrm_activity_contact ON a.id = civicrm_activity_contact.activity_id AND civicrm_activity_contact.record_type_id = 2
+            INNER JOIN civicrm_contact coach on coach.id = civicrm_activity_contact.contact_id
             
             LEFT JOIN `{$coachingsinformatie['table_name']}` ON `{$coachingsinformatie['table_name']}`.entity_id = c.id 
             
