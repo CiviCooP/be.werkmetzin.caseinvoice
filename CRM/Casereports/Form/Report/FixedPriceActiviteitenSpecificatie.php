@@ -345,6 +345,12 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
         $entryFound = TRUE;
       }
 
+      if (array_key_exists('civicrm_activity_activity_date_time', $row) && !empty($rows[$rowNum]['civicrm_activity_activity_date_time'])) {
+        $civicrm_activity_activity_date_time = new DateTime($rows[$rowNum]['civicrm_activity_activity_date_time']);
+        $rows[$rowNum]['civicrm_activity_activity_date_time'] = $civicrm_activity_activity_date_time->format('d-m-Y');
+        $entryFound = TRUE;
+      }
+
       if (array_key_exists('client_subcase_client_subcase_name', $row) && !empty($rows[$rowNum]['client_subcase_client_subcase_id'])) {
         $url = CRM_Utils_System::url("civicrm/contact/view", 'reset=1&cid=' . $row['client_subcase_client_subcase_id'],$this->_absoluteUrl);
         $rows[$rowNum]['client_subcase_client_subcase_name_link'] = $url;
