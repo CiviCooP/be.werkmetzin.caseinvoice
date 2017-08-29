@@ -57,6 +57,7 @@ class CRM_Caseinvoice_Form_CompleteInvoiceTask extends CRM_Core_Form {
    * @param bool $useTable
    */
   public static function preProcessCommon(&$form, $useTable = FALSE) {
+    $util = CRM_Caseinvoice_Util_CompleteInvoices::singleton();
     $form->_activityHolderIds = array();
 
     $values = $form->controller->exportValues($form->get('searchFormName'));
@@ -66,7 +67,7 @@ class CRM_Caseinvoice_Form_CompleteInvoiceTask extends CRM_Core_Form {
     $form->assign('taskName', $caseInvoiceTasks[$form->_task]);
 
     $formValues = $form->get('formValues');
-    $form->activities = CRM_Caseinvoice_Query::query($formValues, false, true);
+    $form->activities = $util->query($formValues);
 
     $ids = array();
     if ($values['radio_ts'] == 'ts_sel') {
