@@ -71,6 +71,11 @@
       <div class="crm-search-tasks">
         {include file="CRM/common/searchResultTasks.tpl"}
       </div>
+      {if $pager and $pager->_response and $pager->_response.numPages > 1}
+        <div class="report-pager">
+            {include file="CRM/common/pager.tpl" location="top"}
+        </div>
+    {/if}
 
       <div class="crm-search-results">
         <table class="selector row-highlight">
@@ -115,6 +120,11 @@
 
         </table>
       </div>
+      {if $pager and $pager->_response and $pager->_response.numPages > 1}
+        <div class="report-pager">
+            {include file="CRM/common/pager.tpl" location="bottom"}
+        </div>
+    {/if}
     </div>
   </div>
 {/if}

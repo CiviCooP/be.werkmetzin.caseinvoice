@@ -6,6 +6,11 @@ class CRM_Caseinvoice_Util_CompleteInvoices {
    * @var CRM_Caseinvoice_Util_CompleteInvoices
    */
   private static $singleton;
+	
+	private $select;
+	private $from;
+	private $where;
+	private $params;
 
   private function __construct() {
     $this->activity_status_id = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'activity_status_id', null, 0);
@@ -42,11 +47,69 @@ class CRM_Caseinvoice_Util_CompleteInvoices {
     }
     return self::$singleton;
   }
+	
+	private function buildQuery($formValues) {
+		if (empty($this->select) || empty($this->from) || empty($this->where)) {
+			$this->buildSelect($formValues);
+			$this->buildFrom($formValues);
+			$this->buildWhere($formValues);
+		}
+	}
+	
+	private function buildSelect($formValues) {
+		$this->select = "a.id as activity_id, a.activity_date_time, a.activity_type_id, a.status_id as activity_status_id, activity_type.label as activity_type_label, activity_status.label as activity_status_label, a.duration,
+              c.id as case_id, c.case_type_id, case_type.title as case_type_label, c.status_id as case_status_id, case_status.label AS case_status_label,
+              contact.display_name, contact.id as contact_id,
+              coach.display_name as coach_display_name, coach.id as coach_id,
+              parent_case.id AS parent_case_id, parent_case_type.title as parent_case_type_label, parent_case_status.label AS parent_case_status_label, parent_contact.id as parent_contact_id, parent_contact.display_name as parent_display_name,
+              civicrm_value_km.km,
+              facturatie_fee.amount as activity_fee_amount,
+              coach_invoice_settings.rate_coach AS invoice_settings_rate_coach, 
+    					coach_invoice_settings.rate_ondersteuning AS invoice_settings_rate_ondersteuning,
+    					coach_invoice_settings.rate_daypart AS invoice_settings_rate_day_part,
+    					coach_invoice_settings.rate_day AS invoice_settings_rate_day";
+	}
+	
+	private function buildFrom($formValues) {
+		$coachingsinformatie = civicrm_api3('CustomGroup', 'getsingle', array('name' => 'Coachingsinformatie'));
+		$this->from = " FROM civicrm_activity a
+            INNER JOIN civicrm_case_activity ca on a.id = ca.activity_id 
+            INNER JOIN civicrm_case c on ca.case_id = c.id
+            INNER JOIN civicrm_case_contact cc on c.id = cc.case_id
+            INNER JOIN civicrm_contact contact on contact.id = cc.contact_id
+            
+            INNER JOIN civicrm_activity_contact ON a.id = civicrm_activity_contact.activity_id AND civicrm_activity_contact.record_type_id = 2
+            INNER JOIN civicrm_contact coach on coach.id = civicrm_activity_contact.contact_id
+            
+            LEFT JOIN `{$coachingsinformatie['table_name']}` ON `{$coachingsinformatie['table_name']}`.entity_id = c.id 
+            
+            LEFT JOIN civicrm_case_type case_type ON case_type.id = c.case_type_id
+            LEFT JOIN civicrm_option_group og_case_status ON og_case_status.name = 'case_status'
+            LEFT JOIN civicrm_option_value case_status ON case_status.option_group_id = og_case_status.id AND case_status.value = c.status_id
+            
+            LEFT JOIN civicrm_option_group og_activity_type ON og_activity_type.name = 'activity_type'
+            LEFT JOIN civicrm_option_value activity_type ON activity_type.option_group_id = og_activity_type.id AND activity_type.value = a.activity_type_id
+            LEFT JOIN civicrm_option_group og_activity_status ON og_activity_status.name = 'activity_status'
+            LEFT JOIN civicrm_option_value activity_status ON activity_status.option_group_id = og_activity_status.id AND activity_status.value = a.status_id
+            
+            LEFT JOIN civicrm_value_caselink_case caselink ON caselink.entity_id = c.id
+            LEFT JOIN civicrm_case parent_case ON parent_case.id = caselink.case_id
+            LEFT JOIN civicrm_case_contact parent_cc on parent_case.id = parent_cc.case_id
+            LEFT JOIN civicrm_contact parent_contact on parent_contact.id = parent_cc.contact_id
+            LEFT JOIN civicrm_case_type parent_case_type ON parent_case_type.id = parent_case.case_type_id
+            LEFT JOIN civicrm_option_group og_parent_case_status ON og_parent_case_status.name = 'case_status'
+            LEFT JOIN civicrm_option_value parent_case_status ON parent_case_status.option_group_id = og_parent_case_status.id AND parent_case_status.value = parent_case.status_id
+            
+            LEFT JOIN civicrm_value_km ON civicrm_value_km.entity_id = a.id
+            LEFT JOIN civicrm_value_facturatie_fee facturatie_fee ON facturatie_fee.entity_id = a.id
+            
+            LEFT JOIN civicrm_value_case_invoice_settings invoice_settings ON invoice_settings.entity_id = c.id
+            LEFT JOIN civicrm_value_case_invoice_settings parent_invoice_settings ON parent_invoice_settings.entity_id = parent_case.id
+            LEFT JOIN civicrm_value_coach_invoice_settings coach_invoice_settings ON coach_invoice_settings.entity_id = c.id ";
+	}
 
-  public function query($formValues) {
-    $km = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'km', null, 0.4);
-
-    $activity_type_ids = array_merge($this->coachings_activity_type_ids, $this->ondersteunings_activity_type_ids, $this->facturatie_fee_activity_type_ids, $this->day_part_activity_type_ids, $this->day_activity_type_ids);
+	private function buildWhere($formValues) {		
+		$activity_type_ids = array_merge($this->coachings_activity_type_ids, $this->ondersteunings_activity_type_ids, $this->facturatie_fee_activity_type_ids, $this->day_part_activity_type_ids, $this->day_activity_type_ids);
 
     $coachingsinformatie = civicrm_api3('CustomGroup', 'getsingle', array('name' => 'Coachingsinformatie'));
     $Chequenummer_kiezen = civicrm_api3('CustomField', 'getsingle', array('name' => 'Chequenummer_kiezen', 'custom_group_id' => $coachingsinformatie['id']));
@@ -107,60 +170,26 @@ class CRM_Caseinvoice_Util_CompleteInvoices {
     }
 
     $where .= " AND a.id NOT IN (select entity_id FROM civicrm_value_factuurcoach WHERE gefactureerd = 1)";
+		
+		$this->where = $where;
+		$this->params = $params;
+	}
 
-    $sql = "SELECT 
-              a.id as activity_id, a.activity_date_time, a.activity_type_id, a.status_id as activity_status_id, activity_type.label as activity_type_label, activity_status.label as activity_status_label, a.duration,
-              c.id as case_id, c.case_type_id, case_type.title as case_type_label, c.status_id as case_status_id, case_status.label AS case_status_label,
-              contact.display_name, contact.id as contact_id,
-              coach.display_name as coach_display_name, coach.id as coach_id,
-              parent_case.id AS parent_case_id, parent_case_type.title as parent_case_type_label, parent_case_status.label AS parent_case_status_label, parent_contact.id as parent_contact_id, parent_contact.display_name as parent_display_name,
-              civicrm_value_km.km,
-              facturatie_fee.amount as activity_fee_amount,
-              coach_invoice_settings.rate_coach AS invoice_settings_rate_coach, 
-    					coach_invoice_settings.rate_ondersteuning AS invoice_settings_rate_ondersteuning,
-    					coach_invoice_settings.rate_daypart AS invoice_settings_rate_day_part,
-    					coach_invoice_settings.rate_day AS invoice_settings_rate_day
-            FROM civicrm_activity a
-            INNER JOIN civicrm_case_activity ca on a.id = ca.activity_id 
-            INNER JOIN civicrm_case c on ca.case_id = c.id
-            INNER JOIN civicrm_case_contact cc on c.id = cc.case_id
-            INNER JOIN civicrm_contact contact on contact.id = cc.contact_id
-            
-            INNER JOIN civicrm_activity_contact ON a.id = civicrm_activity_contact.activity_id AND civicrm_activity_contact.record_type_id = 2
-            INNER JOIN civicrm_contact coach on coach.id = civicrm_activity_contact.contact_id
-            
-            LEFT JOIN `{$coachingsinformatie['table_name']}` ON `{$coachingsinformatie['table_name']}`.entity_id = c.id 
-            
-            LEFT JOIN civicrm_case_type case_type ON case_type.id = c.case_type_id
-            LEFT JOIN civicrm_option_group og_case_status ON og_case_status.name = 'case_status'
-            LEFT JOIN civicrm_option_value case_status ON case_status.option_group_id = og_case_status.id AND case_status.value = c.status_id
-            
-            LEFT JOIN civicrm_option_group og_activity_type ON og_activity_type.name = 'activity_type'
-            LEFT JOIN civicrm_option_value activity_type ON activity_type.option_group_id = og_activity_type.id AND activity_type.value = a.activity_type_id
-            LEFT JOIN civicrm_option_group og_activity_status ON og_activity_status.name = 'activity_status'
-            LEFT JOIN civicrm_option_value activity_status ON activity_status.option_group_id = og_activity_status.id AND activity_status.value = a.status_id
-            
-            LEFT JOIN civicrm_value_caselink_case caselink ON caselink.entity_id = c.id
-            LEFT JOIN civicrm_case parent_case ON parent_case.id = caselink.case_id
-            LEFT JOIN civicrm_case_contact parent_cc on parent_case.id = parent_cc.case_id
-            LEFT JOIN civicrm_contact parent_contact on parent_contact.id = parent_cc.contact_id
-            LEFT JOIN civicrm_case_type parent_case_type ON parent_case_type.id = parent_case.case_type_id
-            LEFT JOIN civicrm_option_group og_parent_case_status ON og_parent_case_status.name = 'case_status'
-            LEFT JOIN civicrm_option_value parent_case_status ON parent_case_status.option_group_id = og_parent_case_status.id AND parent_case_status.value = parent_case.status_id
-            
-            LEFT JOIN civicrm_value_km ON civicrm_value_km.entity_id = a.id
-            LEFT JOIN civicrm_value_facturatie_fee facturatie_fee ON facturatie_fee.entity_id = a.id
-            
-            LEFT JOIN civicrm_value_case_invoice_settings invoice_settings ON invoice_settings.entity_id = c.id
-            LEFT JOIN civicrm_value_case_invoice_settings parent_invoice_settings ON parent_invoice_settings.entity_id = parent_case.id
-            LEFT JOIN civicrm_value_coach_invoice_settings coach_invoice_settings ON coach_invoice_settings.entity_id = c.id 
-            
-            WHERE
-            {$where} 
-            ORDER BY coach.sort_name, parent_contact.sort_name, contact.sort_name, c.id, a.activity_date_time
+	public function count($formValues) {
+		$this->buildQuery($formValues);
+    $sql = "SELECT COUNT(*) {$this->from} WHERE {$this->where}
             ";
+    return CRM_Core_DAO::singleValueQuery($sql, $this->params);
+	}
 
-    $dao = CRM_Core_DAO::executeQuery($sql, $params);
+  public function query($formValues, $offset, $limit) {
+    $km = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'km', null, 0.4);
+		$this->buildQuery($formValues);
+    $sql = "SELECT {$this->select} {$this->from} WHERE {$this->where}
+            ORDER BY coach.sort_name, parent_contact.sort_name, contact.sort_name, c.id, a.activity_date_time
+            LIMIT {$offset}, {$limit}
+            ";
+    $dao = CRM_Core_DAO::executeQuery($sql, $this->params);
     while($dao->fetch()) {
       $row = array(
         'activity_id' => $dao->activity_id,

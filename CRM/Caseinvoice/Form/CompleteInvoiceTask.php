@@ -67,7 +67,14 @@ class CRM_Caseinvoice_Form_CompleteInvoiceTask extends CRM_Core_Form {
     $form->assign('taskName', $caseInvoiceTasks[$form->_task]);
 
     $formValues = $form->get('formValues');
-    $form->activities = $util->query($formValues);
+		$count = $util->count($formValues);
+  	$pager = self::getPager($count);
+		list($offset, $limit) = $pager->getOffsetAndRowCount();
+		if (isset($formValues['radio_ts']) && $formValues['radio_ts'] == 'ts_all') {
+			$offset = 0;
+			$limit = $count;
+		}
+    $form->activities = $util->query($formValues, $offset, $limit);
 
     $ids = array();
     if ($values['radio_ts'] == 'ts_sel') {
@@ -89,6 +96,20 @@ class CRM_Caseinvoice_Form_CompleteInvoiceTask extends CRM_Core_Form {
     }
 
     $form->_activityHolderIds = $form->_componentIds = $ids;
+  }
+
+	/**
+	 * @return CRM_Utils_Pager
+	 */
+  protected static function getPager($count) {
+    $params = array();
+    $params['total'] = $count;
+    $params['status'] = ts('Activities %%StatusMessage%%');
+    $params['csvString'] = NULL;
+    $params['rowCount'] = CRM_Utils_Pager::ROWCOUNT;
+    $params['buttonTop'] = 'PagerTopButton';
+    $params['buttonBottom'] = 'PagerBottomButton';
+    return new CRM_Utils_Pager($params);
   }
 
 

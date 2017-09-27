@@ -37,20 +37,27 @@ class CRM_Caseinvoice_Form_CompleteInvoices extends CRM_Core_Form_Search {
 
     $activities = array();
     if (!empty($this->_formValues)) {
-      $activities = $this->query($this->_formValues);
+    	$util = CRM_Caseinvoice_Util_CompleteInvoices::singleton();
+    	$count = $util->count($this->_formValues);
+    	$this->pager = $this->getPager($count);
+			list($offset, $limit) = $this->pager->getOffsetAndRowCount();
+      $activities = $this->query($this->_formValues, $offset, $limit);
       foreach($activities as $activity) {
         $this->addElement('checkbox', $activity['checkbox'], NULL, NULL, array('class' => 'select-row'));
       }
-      $this->assign('pager', $this->getPager($activities));
+      $this->assign('pager', $this->pager);
       $this->addElement('checkbox', 'toggleSelect', NULL, NULL, array('class' => 'select-rows'));
     }
 
     $this->assign('activities', $activities);
   }
 
-  protected function getPager($activities) {
+	/**
+	 * @return CRM_Utils_Pager
+	 */
+  protected function getPager($count) {
     $params = array();
-    $params['total'] = count($activities);
+    $params['total'] = $count;
     $params['status'] = ts('Activities %%StatusMessage%%');
     $params['csvString'] = NULL;
     $params['rowCount'] = CRM_Utils_Pager::ROWCOUNT;
@@ -59,9 +66,9 @@ class CRM_Caseinvoice_Form_CompleteInvoices extends CRM_Core_Form_Search {
     return new CRM_Utils_Pager($params);
   }
 
-  protected function query($formValues) {
+  protected function query($formValues, $offset, $limit) {
     $util = CRM_Caseinvoice_Util_CompleteInvoices::singleton();
-    return $util->query($formValues);
+    return $util->query($formValues, $offset, $limit);
   }
 
   public function buildQuickForm() {
