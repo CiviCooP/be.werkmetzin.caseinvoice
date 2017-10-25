@@ -4,7 +4,14 @@ require_once 'caseinvoice.civix.php';
 
 function caseinvoice_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
   if ($formName == 'CRM_Casecontribution_Page_CaseTab') {
-    $tplName = 'CRM/Caseinvoice/Page/CaseTab.tpl';
+  	$caseId = $form->getCaseId();
+		$case = civicrm_api3('Case', 'getsingle', array('id' => $caseId));
+		$offerteCaseTypeId = civicrm_api3('CaseType', 'getvalue', array('name' => 'offertetraject', 'return' => 'id'));
+		if ($case['case_type_id'] != $offerteCaseTypeId) {
+    	$tplName = 'CRM/Caseinvoice/Page/CaseTab.tpl';
+		} else {
+			$tplName = 'CRM/Caseinvoice/Page/EmptyCaseTab.tpl';
+		}
   }
 }
 
