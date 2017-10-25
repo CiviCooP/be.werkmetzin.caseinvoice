@@ -194,11 +194,13 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
         $financial_type_id = $invoiceSetting['case_financial_type'];
         $price = CRM_Caseinvoice_Util::calculateInvoiceAmount($activity, $invoiceSetting);
         $label = CRM_Caseinvoice_Util::calculateInvoiceAmountLabel($activity, $invoiceSetting, $caseContacts[$case_id]);
+				$qty = CRM_Caseinvoice_Util::calculateHours($activity, $invoiceSetting);
+				$rate = CRM_Caseinvoice_Util::determineRate($activity, $invoiceSetting);
 
         $line_item = array(
           'label' => $label,
-          'qty' => 1,
-          'unit_price' => $price,
+          'qty' => $qty,
+          'unit_price' => $rate,
           'line_total' => $price,
           'financial_type_id' => $financial_type_id,
           'entity_id' => $activity_id,
@@ -215,8 +217,8 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
 
           $line_item = array(
             'label' => $km_label,
-            'qty' => 1,
-            'unit_price' => $km_price,
+            'qty' => $activity['km'],
+            'unit_price' => $km,
             'line_total' => $km_price,
             'financial_type_id' => $financial_type_id,
             'entity_id' => $activity_id,

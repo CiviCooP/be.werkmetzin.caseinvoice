@@ -60,14 +60,27 @@ class CRM_Caseinvoice_Util {
    * @return float
    */
   public static function calculateInvoiceAmount($activity, $invoiceSetting) {
-    $minutes = CRM_Caseinvoice_Util::calculateRoundedMinutes($activity['duration'], $invoiceSetting['rounding']);
-    $hours = $minutes > 0 ? ($minutes / 60) : 0;
+  	$hours = CRM_Caseinvoice_Util::calculateHours($activity, $invoiceSetting);
     $rate = CRM_Caseinvoice_Util::determineRate($activity, $invoiceSetting);
     if ($rate === false) {
       return false;
     }
     $price = round($hours * $rate, 2);
     return $price;
+  }
+	
+	/**
+   * Calculate the amount of hours to invoice for this activity.
+   *
+   * @param $activity
+   * @param $invoiceSetting
+   *
+   * @return float
+   */
+  public static function calculateHours($activity, $invoiceSetting) {
+    $minutes = CRM_Caseinvoice_Util::calculateRoundedMinutes($activity['duration'], $invoiceSetting['rounding']);
+    $hours = $minutes > 0 ? ($minutes / 60) : 0;
+		return $hours;
   }
 
   public static function calculateInvoiceAmountLabel($activity, $invoiceSetting, $contact_id) {
