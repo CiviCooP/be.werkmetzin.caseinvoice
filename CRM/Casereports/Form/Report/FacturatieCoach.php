@@ -355,7 +355,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     $entryFound = FALSE;
     foreach ($rows as $rowNum => $row) {
     	$url = CRM_Utils_System::url("civicrm/contact/view/case", 'reset=1&action=view&cid=' . $row['client_id'] . '&id=' .$row['civicrm_case_id'],$this->_absoluteUrl);
-			$rows[$rowNum]['manage_case'] = $url;
+			$rows[$rowNum]['manage_case_link'] = $url;
       $rows[$rowNum]['manage_case'] = ts("Manage Case");
 			
       // convert Case ID and Subject to links to Manage Case
