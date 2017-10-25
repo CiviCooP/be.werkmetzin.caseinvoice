@@ -85,7 +85,7 @@ class CRM_Caseinvoice_Form_GenerateInvoices extends CRM_Core_Form_Search {
 
     $this->add('select', 'case_type_id',
       ts('Case Type'),
-      CRM_Case_PseudoConstant::caseType('title', FALSE),
+      CRM_Case_PseudoConstant::caseType('title', TRUE),
       FALSE, array('class' => 'crm-select2', 'multiple' => 'multiple')
     );
 
@@ -123,6 +123,19 @@ class CRM_Caseinvoice_Form_GenerateInvoices extends CRM_Core_Form_Search {
 
     parent::buildQuickForm();
   }
+
+	public function setDefaultValues() {
+		$defaults['betaalwijze'] = 'Betalend';
+		$defaults['case_type_id'] = array();
+		$case_types = civicrm_api3('CaseType', 'get', array('is_active' => 1, 'options' => array('limit' => 0)));
+		$caseTypesNotToSelect = array('offertetraject');
+		foreach($case_types['values'] as $case_type) {
+			if (!in_array($case_type['name'], $caseTypesNotToSelect)) {
+				$defaults['case_type_id'][] = $case_type['id'];
+			}
+		}
+		return $defaults;
+	}
 
   public function postProcess() {
     $values = $this->exportValues();
