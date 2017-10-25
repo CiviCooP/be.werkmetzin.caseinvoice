@@ -204,9 +204,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     	invoice_settings.rounding AS invoice_settings_rounding, 
     	{$activity}.duration AS activity_duration, 
     	km.km as activity_km,
-    	facturatie_fee.amount as activity_fee_amount,
-    	{$case}.id as case_id,
-    	{$client}.id as client_id";
+    	facturatie_fee.amount as activity_fee_amount";
   }
 
   public function from() {
@@ -292,7 +290,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
   public function modifyColumnHeaders() {
     $km = $this->km;
 
-		$this->_columnHeaders['case_id'] = array(
+		$this->_columnHeaders['civicrm_case_id'] = array(
       'no_display' => true,
     );
     $this->_columnHeaders['client_id'] = array(
@@ -356,7 +354,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
 
     $entryFound = FALSE;
     foreach ($rows as $rowNum => $row) {
-    	$url = CRM_Utils_System::url("civicrm/contact/view/case", 'reset=1&action=view&cid=' . $row['client_id'] . '&id=' .$row['case_id'],$this->_absoluteUrl);
+    	$url = CRM_Utils_System::url("civicrm/contact/view/case", 'reset=1&action=view&cid=' . $row['client_id'] . '&id=' .$row['civicrm_case_id'],$this->_absoluteUrl);
 			$rows[$rowNum]['manage_case'] = $url;
       $rows[$rowNum]['manage_case'] = ts("Manage Case");
 			
