@@ -252,6 +252,17 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
     CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_group SET `extends_entity_column_value` = %1 WHERE `name` = 'caselink_case'", array(1=>array($case_type_ids, 'String')));
 		return TRUE;
 	}
+	
+	public function upgrade_1016() {
+		$case_types = array('coaching_voor_bedrijven', 'advies', 'opleiding', 'coachingstraject_io');
+    $case_type_ids = array();
+    foreach($case_types as $case_type) {
+      $case_type_ids[] = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_case_type WHERE name = %1", array(1=>array($case_type, 'String')));
+    }
+    $case_type_ids = CRM_Core_DAO::VALUE_SEPARATOR.implode($case_type_ids, CRM_Core_DAO::VALUE_SEPARATOR).CRM_Core_DAO::VALUE_SEPARATOR;
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_group SET `extends_entity_column_value` = %1 WHERE `name` = 'caselink_case'", array(1=>array($case_type_ids, 'String')));
+		return TRUE;
+	}
 
   public function uninstall() {
     try {
