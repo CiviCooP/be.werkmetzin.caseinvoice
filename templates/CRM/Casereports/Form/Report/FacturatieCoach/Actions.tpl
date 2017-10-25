@@ -28,9 +28,7 @@
   {* build the print pdf buttons *}
   {if $rows}
     <div class="crm-tasks">
-      {assign var=print value="_qf_"|cat:$form.formName|cat:"_submit_print"}
       {assign var=pdf   value="_qf_"|cat:$form.formName|cat:"_submit_pdf"}
-      {assign var=csv   value="_qf_"|cat:$form.formName|cat:"_submit_csv"}
       {assign var=group value="_qf_"|cat:$form.formName|cat:"_submit_group"}
       {assign var=chart value="_qf_"|cat:$form.formName|cat:"_submit_chart"}
       <table style="border:0;">
@@ -39,9 +37,7 @@
             <table class="form-layout-compressed">
               <tr>
                 <td>{$form.export_case_id.html}</td>
-                <td>{$form.$print.html}&nbsp;&nbsp;</td>
                 <td>{$form.$pdf.html}&nbsp;&nbsp;</td>
-                <td>{$form.$csv.html}&nbsp;&nbsp;</td>
                 {if $instanceUrl}
                   <td>&nbsp;&nbsp;&raquo;&nbsp;<a href="{$instanceUrl}">{ts}Existing report(s) from this template{/ts}</a></td>
                 {/if}

@@ -41,6 +41,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
   protected $_customGroupExtends = array('Case', 'Activity');
 
   protected $_add2groupSupported = FALSE;
+	protected $_csvSupported = FALSE;
 
   protected $_absoluteUrl = TRUE;
 
@@ -191,6 +192,9 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     parent::select();
 
     $activity = $this->_aliases['civicrm_activity'];
+		$case = $this->_aliases['civicrm_case'];
+    $client = $this->_aliases['client'];
+		
     $this->_select .= ", 
     	{$activity}.activity_type_id as activity_type_id, 
     	coach_invoice_settings.rate_coach AS invoice_settings_rate_coach, 
@@ -200,7 +204,9 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     	invoice_settings.rounding AS invoice_settings_rounding, 
     	{$activity}.duration AS activity_duration, 
     	km.km as activity_km,
-    	facturatie_fee.amount as activity_fee_amount";
+    	facturatie_fee.amount as activity_fee_amount,
+    	{$case}.id as case_id,
+    	{$client}.id as client_id";
   }
 
   public function from() {
@@ -286,6 +292,12 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
   public function modifyColumnHeaders() {
     $km = $this->km;
 
+		$this->_columnHeaders['case_id'] = array(
+      'no_display' => true,
+    );
+    $this->_columnHeaders['client_id'] = array(
+      'no_display' => true,
+    );
     $this->_columnHeaders['invoice_settings_rate_coach'] = array(
       'no_display' => true,
     );
@@ -325,6 +337,9 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
       'title' => 'Te facturen (KM a € '.$km.' per KM)',
       'type' => CRM_Utils_Type::T_MONEY,
     );
+		$this->_columnHeaders['manage_case'] = array(
+			'title' => 'Manage case',
+		);
   }
 
   /**
@@ -341,6 +356,10 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
 
     $entryFound = FALSE;
     foreach ($rows as $rowNum => $row) {
+    	$url = CRM_Utils_System::url("civicrm/contact/view/case", 'reset=1&action=view&cid=' . $row['client_id'] . '&id=' .$row['case_id'],$this->_absoluteUrl);
+			$rows[$rowNum]['manage_case'] = $url;
+      $rows[$rowNum]['manage_case'] = ts("Manage Case");
+			
       // convert Case ID and Subject to links to Manage Case
       if (array_key_exists('civicrm_case_subject', $row) && array_key_exists('civicrm_case_id', $row) && !empty($rows[$rowNum]['client_id'])) {
         $url = CRM_Utils_System::url("civicrm/contact/view/case", 'reset=1&action=view&cid=' . $row['client_id'] . '&id=' .$row['civicrm_case_id'],$this->_absoluteUrl);
