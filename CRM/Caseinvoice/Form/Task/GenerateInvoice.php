@@ -216,7 +216,6 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
           'entity_id' => $activity_id,
           'entity_table' => 'civicrm_activity',
         );
-				
         $total = $total + $total_exl_vat;
         $total_tax_amount = $total_tax_amount + $line_item['tax_amount'];
         $line_items[] = $line_item;
@@ -290,9 +289,11 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
 		$contributionParams['net_amount'] = $total;
     $contributionParams['source'] = $source;
     $contribution = civicrm_api3('Contribution', 'create', $contributionParams);
+		
     foreach ($line_items as $line_item) {
       $line_item['contribution_id'] = $contribution['id'];
-      civicrm_api3('LineItem', 'Create', $line_item);
+			// We use the BAO instead of the API to prevent recalculation of taxes
+			CRM_Price_BAO_LineItem::create($line_item);
     }
     civicrm_api3('CaseContribution', 'create', array(
       'case_id' => $case_id,
