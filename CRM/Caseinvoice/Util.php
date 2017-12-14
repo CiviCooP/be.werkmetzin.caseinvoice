@@ -25,6 +25,7 @@ class CRM_Caseinvoice_Util {
         'invoice_contact' => $dao->invoice_contact,
         'case_financial_type' => $dao->case_financial_type,
         'invoice_setting' => $dao->invoice_setting,
+        'vat_setting' => $dao->vat_setting,
       );
     }
     return $settings;
@@ -67,6 +68,36 @@ class CRM_Caseinvoice_Util {
     }
     $price = round($hours * $rate, 2);
     return $price;
+  }
+	
+	/**
+   * Calculate the amount to invoice for this activity.
+   *
+   * @param $activity
+   * @param $invoiceSetting
+   *
+   * @return float
+   */
+  public static function calculateInvoiceTaxAmount($price, $invoiceSetting) {
+  	$taxRates = CRM_Core_PseudoConstant::getTaxRates();
+		$financial_type_id = $invoiceSetting['case_financial_type'];
+  	$taxAmount = 0.00;
+		$amount = CRM_Utils_Rule::cleanMoney($price);
+		
+		if (array_key_exists($financial_type_id, $taxRates)) {
+    	$taxRate = $taxRates[$financial_type_id];
+			switch ($invoiceSetting['vat_setting']) {
+				case 'vat_excluded':
+					$taxAmount = $amount * $taxRate / 100;
+					break;
+				case 'vat_included':
+					$taxAmount = $amount * $taxRate / (100 + $taxRate);
+					break;
+			}
+  	}
+		
+    $taxAmount = round($taxAmount, 2);
+    return $taxAmount;
   }
 	
 	/**

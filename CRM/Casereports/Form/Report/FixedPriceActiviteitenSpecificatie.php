@@ -50,6 +50,7 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
     $this->km = CRM_Core_BAO_Setting::getItem('be.werkmetzin.caseinvoice', 'km', null, 0.4);
     $kmCustomGroup = civicrm_api3('CustomGroup', 'getsingle', array('name' => 'KM'));
     $kmCustomField = civicrm_api3('CustomField', 'getsingle', array('name' => 'km', 'custom_group_id' => $kmCustomGroup['id']));
+
     $this->case_types = CRM_Case_PseudoConstant::caseType();
     $this->case_statuses = CRM_Core_OptionGroup::values('case_status');
     $this->activity_statuses = CRM_Core_OptionGroup::values('activity_status');

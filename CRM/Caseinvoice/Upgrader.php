@@ -37,7 +37,7 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
   }
 
   public function upgrade_1002() {
-    $this->executeCustomDataFile('xml/case_invoice_settings.xml');
+    //$this->executeCustomDataFile('xml/case_invoice_settings.xml');
     return true;
   }
 
@@ -100,7 +100,7 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
 	public function upgrade_1006() {
   	$custom_group_id = civicrm_api3('CustomGroup', 'getvalue', array('return' => 'id', 'name' => 'case_invoice_settings'));
 		CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_field SET label = 'Uurtarief (coachingsactiviteiten)' WHERE `name` = 'rate' AND custom_group_id = %1", array(1=>array($custom_group_id, 'Integer')));
-  	$this->executeCustomDataFile('xml/case_invoice_settings.xml');
+  	//$this->executeCustomDataFile('xml/case_invoice_settings.xml');
 
 		return true;
 	}
@@ -261,6 +261,11 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
     }
     $case_type_ids = CRM_Core_DAO::VALUE_SEPARATOR.implode($case_type_ids, CRM_Core_DAO::VALUE_SEPARATOR).CRM_Core_DAO::VALUE_SEPARATOR;
     CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_group SET `extends_entity_column_value` = %1 WHERE `name` = 'caselink_case'", array(1=>array($case_type_ids, 'String')));
+		return TRUE;
+	}
+	
+	public function upgrade_1017() {
+		$this->executeCustomDataFile('xml/case_invoice_settings.xml');
 		return TRUE;
 	}
 
