@@ -42,25 +42,6 @@
       <custom_group_name>case_invoice_settings</custom_group_name>
     </CustomField>
     <CustomField>
-      <name>vat_setting</name>
-      <label>BTW instelling tarief inclusief BTW / exclusief BTW</label>
-      <data_type>String</data_type>
-      <html_type>Select</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>2</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>vat_setting</column_name>
-      <in_selector>0</in_selector>
-      <option_group_name>vat_setting</option_group_name>
-      <custom_group_name>case_invoice_settings</custom_group_name>
-    </CustomField>
-    <CustomField>
       <name>total_amount</name>
       <label>Totaalbedrag (fixed price)</label>
       <data_type>Money</data_type>
@@ -68,7 +49,7 @@
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
       <is_search_range>1</is_search_range>
-      <weight>3</weight>
+      <weight>2</weight>
       <is_active>1</is_active>
       <is_view>0</is_view>
       <text_length>255</text_length>
@@ -86,7 +67,7 @@
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
       <is_search_range>0</is_search_range>
-      <weight>4</weight>
+      <weight>3</weight>
       <is_active>1</is_active>
       <is_view>0</is_view>
       <text_length>255</text_length>
@@ -105,7 +86,7 @@
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
       <is_search_range>0</is_search_range>
-      <weight>5</weight>
+      <weight>4</weight>
       <is_active>1</is_active>
       <is_view>0</is_view>
       <text_length>255</text_length>
@@ -124,7 +105,7 @@
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
       <is_search_range>0</is_search_range>
-      <weight>6</weight>
+      <weight>5</weight>
       <is_active>1</is_active>
       <is_view>0</is_view>
       <text_length>255</text_length>
@@ -143,7 +124,7 @@
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
       <is_search_range>1</is_search_range>
-      <weight>7</weight>
+      <weight>6</weight>
       <is_active>1</is_active>
       <is_view>0</is_view>
       <text_length>255</text_length>
@@ -161,7 +142,7 @@
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
       <is_search_range>1</is_search_range>
-      <weight>8</weight>
+      <weight>7</weight>
       <is_active>1</is_active>
       <is_view>0</is_view>
       <text_length>255</text_length>
@@ -179,7 +160,7 @@
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
       <is_search_range>0</is_search_range>
-      <weight>9</weight>
+      <weight>8</weight>
       <is_active>1</is_active>
       <is_view>0</is_view>
       <text_length>255</text_length>
@@ -198,7 +179,7 @@
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
       <is_search_range>0</is_search_range>
-      <weight>10</weight>
+      <weight>9</weight>
       <is_active>1</is_active>
       <is_view>0</is_view>
       <text_length>255</text_length>
@@ -213,12 +194,6 @@
     <OptionGroup>
       <name>fixed_price_hourly_rate</name>
       <title>Fixed price / Uurtarief</title>
-      <is_reserved>1</is_reserved>
-      <is_active>1</is_active>
-    </OptionGroup>
-    <OptionGroup>
-      <name>vat_setting</name>
-      <title>BTW instelling tarief</title>
       <is_reserved>1</is_reserved>
       <is_active>1</is_active>
     </OptionGroup>
@@ -269,28 +244,6 @@
       <is_reserved>1</is_reserved>
       <is_active>1</is_active>
       <option_group_name>fixed_price_hourly_rate</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Inclusief BTW</label>
-      <value>vat_included</value>
-      <name>vat_included</name>
-      <is_default>0</is_default>
-      <weight>1</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>1</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>vat_setting</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Exclusief BTW</label>
-      <value>vat_excluded</value>
-      <name>vat_excluded</name>
-      <is_default>0</is_default>
-      <weight>1</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>1</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>vat_setting</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Verzamelfactuur</label>

@@ -193,30 +193,21 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
         }
         $financial_type_id = $invoiceSetting['case_financial_type'];
         $price = CRM_Caseinvoice_Util::calculateInvoiceAmount($activity, $invoiceSetting);
-				$tax_amount = CRM_Caseinvoice_Util::calculateInvoiceTaxAmount($price, $invoiceSetting);
         $label = CRM_Caseinvoice_Util::calculateInvoiceAmountLabel($activity, $invoiceSetting, $caseContacts[$case_id]);
 				$qty = CRM_Caseinvoice_Util::calculateHours($activity, $invoiceSetting);
 				$rate = CRM_Caseinvoice_Util::determineRate($activity, $invoiceSetting);
-				
-				$total_incl_vat = $price + $tax_amount;
-				$total_exl_vat = $price;
-				if ($invoiceSetting['vat_setting'] == 'vat_included') {
-					$total_incl_vat = $price;
-					$total_exl_vat = $price - $tax_amount;
-				}
 
         $line_item = array(
           'label' => $label,
           'qty' => $qty,
           'unit_price' => $rate,
-          'line_total' => $total_exl_vat,
-          'total_amount' => $total_incl_vat,
-          'tax_amount' => $tax_amount,
+          'line_total' => $price,
           'financial_type_id' => $financial_type_id,
           'entity_id' => $activity_id,
           'entity_table' => 'civicrm_activity',
         );
-        $total = $total + $total_exl_vat;
+        $line_item = CRM_Contribute_BAO_Contribution::checkTaxAmount($line_item, TRUE);
+        $total = $total + $line_item['line_total'];
         $total_tax_amount = $total_tax_amount + $line_item['tax_amount'];
         $line_items[] = $line_item;
 
@@ -292,8 +283,7 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
 		
     foreach ($line_items as $line_item) {
       $line_item['contribution_id'] = $contribution['id'];
-			// We use the BAO instead of the API to prevent recalculation of taxes
-			CRM_Price_BAO_LineItem::create($line_item);
+			civicrm_api3('LineItem', 'Create', $line_item);
     }
     civicrm_api3('CaseContribution', 'create', array(
       'case_id' => $case_id,

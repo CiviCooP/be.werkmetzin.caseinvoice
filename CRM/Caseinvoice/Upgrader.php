@@ -263,11 +263,6 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
     CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_group SET `extends_entity_column_value` = %1 WHERE `name` = 'caselink_case'", array(1=>array($case_type_ids, 'String')));
 		return TRUE;
 	}
-	
-	public function upgrade_1017() {
-		$this->executeCustomDataFile('xml/case_invoice_settings.xml');
-		return TRUE;
-	}
 
   public function uninstall() {
     try {
