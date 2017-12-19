@@ -36,7 +36,6 @@ class CRM_Caseinvoice_StateMachine_GenerateInvoices extends CRM_Core_StateMachin
     else {
       $this->_pages[$task] = NULL;
     }
-
     $this->addSequentialPages($this->_pages, $action);
   }
 

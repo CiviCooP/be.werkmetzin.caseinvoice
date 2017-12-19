@@ -33,7 +33,13 @@ class CRM_Caseinvoice_Query {
     $paramCount = 1;
     $where = " 1";
     if ($onlyNotInvoicedActivities) {
-      $where .= " AND a.id NOT IN (SELECT civicrm_line_item.entity_id FROM civicrm_line_item WHERE civicrm_line_item.entity_table = 'civicrm_activity')";
+      $where .= " AND a.id NOT IN (
+      	SELECT civicrm_line_item.entity_id 
+      	FROM civicrm_line_item
+      	INNER JOIN civicrm_contribution ON civicrm_line_item.contribution_id = civicrm_contribution.id 
+      	WHERE civicrm_line_item.entity_table = 'civicrm_activity'
+      	AND civicrm_contribution.is_test = '0'
+    	)";
     }
     $where .= " AND a.is_test = '0' AND a.is_current_revision = '1' AND a.is_deleted = '0' AND c.is_deleted = '0'";
     $where .= " AND contact.is_deleted = '0'";

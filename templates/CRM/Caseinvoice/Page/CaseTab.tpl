@@ -34,7 +34,9 @@
                             <br />{ts}(Recurring Contribution){/ts}
                         {/if}
                     </td>
-                    <td class="crm-contribution-type crm-contribution-type_{$row.financial_type_id} crm-financial-type crm-financial-type_{$row.financial_type_id}">{$row.financial_type}</td>
+                    <td class="crm-contribution-type crm-contribution-type_{$row.financial_type_id} crm-financial-type crm-financial-type_{$row.financial_type_id} {if $row.is_test}contribution_is_test{/if}">
+                    	{$row.financial_type} {if $row.is_test}({ts}test{/ts}){/if}
+                  	</td>
                     <td class="crm-contribution-receive_date">{$row.receive_date|crmDate}</td>
                     <td class="crm-contribution-status">
                         {$row.contribution_status}<br />
