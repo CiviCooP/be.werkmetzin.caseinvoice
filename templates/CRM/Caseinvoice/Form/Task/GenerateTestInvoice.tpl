@@ -2,6 +2,7 @@
     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
     <div class="messages status no-popup">
         <div class="icon inform-icon"></div>
+        <h2>{ts}Test factuur{/ts}</h2>
         <p>{ts}Weet je zeker dat je voor de geselecteerde activiteiten een test factuur wilt aanmaken?{/ts}</p>
     </div>
 
