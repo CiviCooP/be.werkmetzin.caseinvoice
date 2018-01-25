@@ -38,11 +38,6 @@ class CRM_Caseinvoice_Task {
           'class' => 'CRM_Caseinvoice_Form_Task_GenerateInvoice',
           'result' => FALSE,
         ),
-        2 => array(
-          'title' => ts('Maak uitgaande test-facturen'),
-          'class' => 'CRM_Caseinvoice_Form_Task_GenerateTestInvoice',
-          'result' => FALSE,
-        ),
       );
     }
     CRM_Utils_Hook::searchTasks('generateinvoice', self::$_generate_invoice_tasks);
