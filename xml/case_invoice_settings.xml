@@ -44,7 +44,7 @@
     <CustomField>
       <name>total_amount</name>
       <label>Totaalbedrag (fixed price)</label>
-      <data_type>Money</data_type>
+      <data_type>Float</data_type>
       <html_type>Text</html_type>
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
@@ -119,7 +119,7 @@
     <CustomField>
       <name>rate</name>
       <label>Uurtarief (coachingsactiviteiten)</label>
-      <data_type>Money</data_type>
+      <data_type>Float</data_type>
       <html_type>Text</html_type>
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
@@ -137,7 +137,7 @@
     <CustomField>
       <name>rate_ondersteuning</name>
       <label>Uurtarief (ondersteuningsactiviteiten)</label>
-      <data_type>Money</data_type>
+      <data_type>Float</data_type>
       <html_type>Text</html_type>
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>

@@ -263,6 +263,26 @@ class CRM_Caseinvoice_Upgrader extends CRM_Caseinvoice_Upgrader_Base {
     CRM_Core_DAO::executeQuery("UPDATE civicrm_custom_group SET `extends_entity_column_value` = %1 WHERE `name` = 'caselink_case'", array(1=>array($case_type_ids, 'String')));
 		return TRUE;
 	}
+	
+	public function upgrade_1017() {
+		// Convert money field to float field so we can enter more than 2 decimals 
+		$custom_group_id = civicrm_api3('CustomGroup', 'getvalue', array('return' => 'id', 'name' => 'case_invoice_settings'));
+		$custom_group_table = civicrm_api3('CustomGroup', 'getvalue', array('return' => 'table_name', 'name' => 'case_invoice_settings'));
+		$fields[] = civicrm_api3('CustomField', 'getsingle', array('name' => 'total_amount', 'custom_group_id' => $custom_group_id));
+		$fields[] = civicrm_api3('CustomField', 'getsingle', array('name' => 'rate', 'custom_group_id' => $custom_group_id));
+		$fields[] = civicrm_api3('CustomField', 'getsingle', array('name' => 'rate_ondersteuning', 'custom_group_id' => $custom_group_id));
+		
+		foreach($fields as $field) {
+			$sql = "UPDATE `civicrm_custom_field` SET `data_type` = 'Float' WHERE `civicrm_custom_field`.`id` = %1;";
+			$sqlParams[1] = array($field['id'], 'Integer');
+			CRM_Core_DAO::executeQuery($sql, $sqlParams);
+			
+			$alterSql = "ALTER TABLE `{$custom_group_table}` CHANGE `{$field['column_name']}` `{$field['column_name']}` DOUBLE NULL DEFAULT NULL;";
+			CRM_Core_DAO::executeQuery($alterSql);
+		}
+		 
+		return true;
+	}
 
   public function uninstall() {
     try {
