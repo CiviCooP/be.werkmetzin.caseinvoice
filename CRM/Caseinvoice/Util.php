@@ -74,7 +74,7 @@ class CRM_Caseinvoice_Util {
     if ($rate === false) {
       return false;
     }
-    $price = round($hours * $rate, 2);
+    $price = $hours * $rate;
     return $price;
   }
 	

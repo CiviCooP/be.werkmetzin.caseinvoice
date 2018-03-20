@@ -275,9 +275,9 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
     $contributionParams['payment_instrument_id'] = $payment_instrument_id;
     $contributionParams['skipLineItem'] = TRUE;
     $contributionParams['skipRecentView'] = TRUE;
-    $contributionParams['total_amount'] = $total + $total_tax_amount;
-    $contributionParams['tax_amount'] = $total_tax_amount;
-		$contributionParams['net_amount'] = $total;
+    $contributionParams['total_amount'] = round(($total + $total_tax_amount), 2);
+    $contributionParams['tax_amount'] = round($total_tax_amount, 2);
+		$contributionParams['net_amount'] = round($total, 2);
     $contributionParams['source'] = $source;
 		$this->alterContributionParameters($contributionParams);
     $contribution = civicrm_api3('Contribution', 'create', $contributionParams);
