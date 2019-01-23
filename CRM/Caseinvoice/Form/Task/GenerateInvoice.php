@@ -284,7 +284,9 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
 		
     foreach ($line_items as $line_item) {
       $line_item['contribution_id'] = $contribution['id'];
-			civicrm_api3('LineItem', 'Create', $line_item);
+			$result = civicrm_api3('LineItem', 'Create', $line_item);
+			$this->addFinancialItem($result['id'], $line_item, $contact_id, $contribution['id'], $contribution_status_id, FALSE);
+      $this->addFinancialItem($result['id'], $line_item, $contact_id, $contribution['id'], $contribution_status_id, TRUE);
     }
     civicrm_api3('CaseContribution', 'create', array(
       'case_id' => $case_id,
@@ -295,5 +297,55 @@ class CRM_Caseinvoice_Form_Task_GenerateInvoice extends CRM_Caseinvoice_Form_Gen
 	protected function alterContributionParameters(&$contributionParameters) {
 		// Child classes could override this function to alter the contribution params.
 	}
+
+	protected function addFinancialItem($line_item_id, $line_item, $contact_id, $contribution_id, $contribution_status_id, $isTax=FALSE) {
+    $today = new DateTime();
+    $contributionStatuses = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
+    $financialItemStatus = CRM_Core_PseudoConstant::get('CRM_Financial_DAO_FinancialItem', 'status_id');
+    $itemStatus = NULL;
+    if ($contribution_status_id == array_search('Completed', $contributionStatuses)
+      || $contribution_status_id == array_search('Pending refund', $contributionStatuses)
+    ) {
+      $itemStatus = array_search('Paid', $financialItemStatus);
+    }
+    elseif ($contribution_status_id == array_search('Pending', $contributionStatuses)
+      || $contribution_status_id == array_search('In Progress', $contributionStatuses)
+    ) {
+      $itemStatus = array_search('Unpaid', $financialItemStatus);
+    }
+    elseif ($contribution_status_id == array_search('Partially paid', $contributionStatuses)) {
+      $itemStatus = array_search('Partially paid', $financialItemStatus);
+    }
+    $params = array(
+      'transaction_date' => $today->format('Ymd'),
+      'contact_id' => $contact_id,
+      'amount' => $line_item['line_total'],
+      'currency' => 'EUR',
+      'entity_table' => 'civicrm_line_item',
+      'entity_id' => $line_item_id,
+      'description' => ($line_item['qty'] != 1 ? $line_item['qty'] . ' of ' : '') . $line_item['label'],
+      'status_id' => $itemStatus,
+    );
+
+    if ($isTax) {
+      $invoiceSettings = Civi::settings()->get('contribution_invoice_settings');
+      $taxTerm = CRM_Utils_Array::value('tax_term', $invoiceSettings);
+      $params['amount'] = $line_item['tax_amount'];
+      $params['description'] = $taxTerm;
+      $accountRelName = 'Sales Tax Account is';
+    }
+    else {
+      $accountRelName = 'Income Account is';
+    }
+    if ($line_item['financial_type_id']) {
+      $params['financial_account_id'] = CRM_Financial_BAO_FinancialAccount::getFinancialAccountForFinancialTypeByRelationship($line_item['financial_type_id'], $accountRelName);
+    }
+    $trxnId['id'] = CRM_Contribute_BAO_Contribution::$_trxnIDs;
+    if (empty($trxnId['id'])) {
+      $trxn = CRM_Core_BAO_FinancialTrxn::getFinancialTrxnId($contribution_id, 'ASC', TRUE);
+      $trxnId['id'] = $trxn['financialTrxnId'];
+    }
+    $financialItem = CRM_Financial_BAO_FinancialItem::create($params, NULL, $trxnId);
+  }
 
 }

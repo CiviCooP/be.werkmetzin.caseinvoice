@@ -36,7 +36,7 @@ function caseinvoice_civicrm_buildForm($formName, &$form) {
     }
   }
   if ($form instanceof  CRM_Contribute_Form_Contribution) {
-    $pendingStatusId = civicrm_api3('OptionValue', 'getvalue', array('option_group' => 'contribution_status', 'name' => 'pending', 'return' => 'value'));
+    $pendingStatusId = civicrm_api3('OptionValue', 'getvalue', array('option_group_id' => 'contribution_status', 'name' => 'Pending', 'return' => 'value'));
     $form->setDefaults(array('contribution_status_id' => $pendingStatusId));
   }
   if ($form instanceof CRM_Contribute_Form_ContributionView) {
