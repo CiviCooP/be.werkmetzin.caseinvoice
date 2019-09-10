@@ -291,7 +291,7 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
   }
 
   protected function buildParentCaseList() {
-    $parentCases = array('' => ts(' - Alle dossiers - '));
+    $parentCases = array();
     $case = $this->_aliases['civicrm_case'];
     $client = $this->_aliases['client'];
     $select = "SELECT DISTINCT {$case}.id, {$case}.subject, {$client}.sort_name as client";
@@ -300,7 +300,12 @@ class CRM_Casereports_Form_Report_FixedPriceActiviteitenSpecificatie extends CRM
     while($dao->fetch()) {
       $parentCases[$dao->id] = $dao->client .' - ' . $dao->subject;
     }
-    $this->add('select', 'export_parent_case_id', ts('Select parent case'), $parentCases, true);
+    $this->add('select', 'export_parent_case_id', ts('Select parent case'), $parentCases, false, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'multiple' => FALSE,
+      'placeholder' => ts('- Alle dossiers -'),
+    ));
   }
 
   /**

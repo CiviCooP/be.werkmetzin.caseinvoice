@@ -20,7 +20,18 @@
 
     <div class="crm-block crm-content-block crm-report-form-block">
         {*include actions*}
-        {include file="CRM/Casereports/Form/Report/FixedPriceActiviteitenSpecificatie/Actions.tpl"}
+        {include file="CRM/Report/Form/Actions.tpl"}
+
+        {if !$printOnly && $rows}
+          <table class="form-layout-compressed">
+            <tr>
+              <td>{$form.export_parent_case_id.html}</td>
+              <td class="crm-submit-buttons">
+                  {$form.buttons.html}
+              </td>
+            </tr>
+          </table>
+        {/if}
 
         {*Statistics at the Top of the page*}
         {if $outputMode eq 'html'}

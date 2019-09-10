@@ -194,7 +194,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     $activity = $this->_aliases['civicrm_activity'];
 		$case = $this->_aliases['civicrm_case'];
     $client = $this->_aliases['client'];
-		
+
     $this->_select .= ", 
     	{$activity}.activity_type_id as activity_type_id, 
     	coach_invoice_settings.rate_coach AS invoice_settings_rate_coach, 
@@ -275,7 +275,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
   }
 
   protected function buildCaseListForExport() {
-    $parentCases = array('' => ts(' - Alle dossiers - '));
+    $parentCases = array();
     $case = $this->_aliases['civicrm_case'];
     $client = $this->_aliases['client'];
     $select = "SELECT DISTINCT {$case}.id, {$case}.subject, {$client}.sort_name as client";
@@ -284,7 +284,12 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     while($dao->fetch()) {
       $parentCases[$dao->id] = $dao->client .' - ' . $dao->subject;
     }
-    $this->add('select', 'export_case_id', ts('Select case'), $parentCases, true);
+    $this->add('select', 'export_case_id', ts('Select case'), $parentCases, false, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'multiple' => FALSE,
+      'placeholder' => ts('- Alle dossiers -'),
+    ));
   }
 
   public function modifyColumnHeaders() {
@@ -357,7 +362,7 @@ class CRM_Casereports_Form_Report_FacturatieCoach extends CRM_Report_Form {
     	$url = CRM_Utils_System::url("civicrm/contact/view/case", 'reset=1&action=view&cid=' . $row['client_id'] . '&id=' .$row['civicrm_case_id'],$this->_absoluteUrl);
 			$rows[$rowNum]['manage_case_link'] = $url;
       $rows[$rowNum]['manage_case'] = ts("Manage Case");
-			
+
       // convert Case ID and Subject to links to Manage Case
       if (array_key_exists('civicrm_case_subject', $row) && array_key_exists('civicrm_case_id', $row) && !empty($rows[$rowNum]['client_id'])) {
         $url = CRM_Utils_System::url("civicrm/contact/view/case", 'reset=1&action=view&cid=' . $row['client_id'] . '&id=' .$row['civicrm_case_id'],$this->_absoluteUrl);
