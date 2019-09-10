@@ -15,6 +15,27 @@ function caseinvoice_civicrm_alterTemplateFile($formName, &$form, $context, &$tp
   }
 }
 
+/**
+ * Add the line items to the contribution form.
+ * So that upon saving of a contribution total amount does not get mangled.
+ *
+ * @param $formName
+ * @param $form
+ */
+function caseinvoice_civicrm_preProcess($formName, &$form) {
+  if ($form instanceof CRM_Contribute_Form_Contribution) {
+    $lineItem = $form->getVar('_lineItems');
+    if (empty($lineItem)) {
+      $newLineItem = CRM_Price_BAO_LineItem::getLineItems($form->getVar('_id'), 'contribution', 0, TRUE, TRUE);
+      if (!empty($newLineItem)) {
+        $lineItem[] = $newLineItem;
+      }
+      $form->setVar('_lineItems', $lineItem);
+      $form->assign('lineItem', empty($lineItem) ? FALSE : $lineItem);
+    }
+  }
+}
+
 function caseinvoice_civicrm_buildForm($formName, &$form) {
   if ($form instanceof CRM_Case_Form_CustomData) {
     $customGroupName = civicrm_api3('CustomGroup', 'getvalue', array('return' => 'name', 'id' => $form->getVar('_groupID')));
