@@ -79,8 +79,14 @@ function caseinvoice_civicrm_buildForm($formName, &$form) {
     }
   }
   if ($form instanceof  CRM_Contribute_Form_Contribution) {
-    $pendingStatusId = civicrm_api3('OptionValue', 'getvalue', array('option_group_id' => 'contribution_status', 'name' => 'Pending', 'return' => 'value'));
-    $form->setDefaults(array('contribution_status_id' => $pendingStatusId));
+    if (!$form->getVar('_id')){
+      $pendingStatusId = civicrm_api3('OptionValue', 'getvalue', [
+        'option_group_id' => 'contribution_status',
+        'name' => 'Pending',
+        'return' => 'value'
+      ]);
+      $form->setDefaults(['contribution_status_id' => $pendingStatusId]);
+    }
     if ($form->getVar('_id') && $form->get_template_vars('displayLineItems')) {
       $contribution = civicrm_api3('Contribution', 'getsingle', array('id' => $form->getVar('_id')));
       $form->assign('totalAmount', $contribution['total_amount']);
