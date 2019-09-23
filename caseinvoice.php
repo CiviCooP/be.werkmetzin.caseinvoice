@@ -26,12 +26,34 @@ function caseinvoice_civicrm_preProcess($formName, &$form) {
   if ($form instanceof CRM_Contribute_Form_Contribution) {
     $lineItem = $form->getVar('_lineItems');
     if (empty($lineItem)) {
-      $newLineItem = CRM_Price_BAO_LineItem::getLineItems($form->getVar('_id'), 'contribution', 0, TRUE, TRUE);
-      if (!empty($newLineItem)) {
-        $lineItem[] = $newLineItem;
+      $lineItems = [];
+      $displayLineItems = FALSE;
+      if ($form->getVar('_id')) {
+        $lineItems = [CRM_Price_BAO_LineItem::getLineItemsByContributionID(($form->getVar('_id')))];
+        $firstLineItem = reset($lineItems[0]);
+        if (empty($firstLineItem['price_set_id'])) {
+          // CRM-20297 All we care is that it's not QuickConfig, so no price set
+          // is no problem.
+          $displayLineItems = TRUE;
+        }
+        else {
+          try {
+            $priceSet = civicrm_api3('PriceSet', 'getsingle', [
+              'id' => $firstLineItem['price_set_id'],
+              'return' => 'is_quick_config, id',
+            ]);
+            $displayLineItems = !$priceSet['is_quick_config'];
+          }
+          catch (CiviCRM_API3_Exception $e) {
+            throw new CRM_Core_Exception('Cannot find price set by ID');
+          }
+        }
       }
-      $form->setVar('_lineItems', $lineItem);
-      $form->assign('lineItem', empty($lineItem) ? FALSE : $lineItem);
+      $form->assign('displayLineItems', $displayLineItems);
+      if ($displayLineItems) {
+        $form->setVar('_lineItems', $lineItems);
+        $form->assign('lineItem', $lineItems);
+      }
     }
   }
 }
@@ -59,6 +81,10 @@ function caseinvoice_civicrm_buildForm($formName, &$form) {
   if ($form instanceof  CRM_Contribute_Form_Contribution) {
     $pendingStatusId = civicrm_api3('OptionValue', 'getvalue', array('option_group_id' => 'contribution_status', 'name' => 'Pending', 'return' => 'value'));
     $form->setDefaults(array('contribution_status_id' => $pendingStatusId));
+    if ($form->getVar('_id') && $form->get_template_vars('displayLineItems')) {
+      $contribution = civicrm_api3('Contribution', 'getsingle', array('id' => $form->getVar('_id')));
+      $form->assign('totalAmount', $contribution['total_amount']);
+    }
   }
   if ($form instanceof CRM_Contribute_Form_ContributionView) {
     $lineItem = CRM_Price_BAO_LineItem::getLineItems($form->get('id'), 'contribution', NULL, TRUE, TRUE);
